@@ -343,12 +343,12 @@ async function loadData() {
       fetch('https://valorant-api.com/v1/maps?language=es-ES'),
     ]);
     const [agentsData, weaponsData, mapsData] = await Promise.all([
-      agentsRes.json(), weaponsRes.json(), mapsData ? mapsRes.json() : {data:[]}
+      agentsRes.json(), weaponsRes.json(), mapsRes.json()
     ]);
 
     const agents = agentsData.data || [];
     const weapons = (weaponsData.data || []).filter(w => w.shopData);
-    const maps = (await mapsRes.json()).data || [];
+    const maps = mapsData.data || [];
 
     questionPool = [
       ...genRoleQuestions(agents),
