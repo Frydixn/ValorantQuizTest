@@ -1,758 +1,1541 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ValoQuiz — Defuse the Spike</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap');
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ValoQuiz — Defuse the Spike</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap');
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  :root {
-    --red: #ff4655; --red-dark: #c1121f; --red-glow: rgba(255,70,85,0.35);
-    --gold: #e8c84a; --bg: #0f1923; --bg2: #1a2332; --bg3: #243040;
-    --surface: #1e2d3d; --border: rgba(255,70,85,0.25);
-    --text: #ece8e1; --muted: #7b8fa6;
-    --green: #3cbf6e; --green-glow: rgba(60,191,110,0.3);
-  }
+    :root {
+      --red: #ff4655;
+      --red-dark: #c1121f;
+      --red-glow: rgba(255, 70, 85, 0.35);
+      --gold: #e8c84a;
+      --bg: #0f1923;
+      --bg2: #1a2332;
+      --bg3: #243040;
+      --surface: #1e2d3d;
+      --border: rgba(255, 70, 85, 0.25);
+      --text: #ece8e1;
+      --muted: #7b8fa6;
+      --green: #3cbf6e;
+      --green-glow: rgba(60, 191, 110, 0.3);
+    }
 
-  body {
-    font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text);
-    min-height: 100dvh; display: flex; align-items: flex-start;
-    justify-content: center; overflow-x: hidden; overflow-y: auto;
-  }
-  @media (min-width: 480px) { body { align-items: center; } }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
 
-  .scanlines {
-    position: fixed; inset: 0; pointer-events: none; z-index: 1000;
-    background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);
-  }
+    @media (min-width: 480px) {
+      body {
+        align-items: center;
+      }
+    }
 
-  #app { width: 100%; max-width: 700px; padding: 1.25rem; position: relative; z-index: 1; }
+    .scanlines {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1000;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.03) 2px, rgba(0, 0, 0, 0.03) 4px);
+    }
 
-  /* HEADER */
-  .header { text-align: center; margin-bottom: 1.25rem; }
-  .logo { font-family: 'Rajdhani', sans-serif; font-size: 2.4rem; font-weight: 700; letter-spacing: 4px; color: var(--red); text-transform: uppercase; text-shadow: 0 0 20px var(--red-glow); }
-  .logo span { color: var(--text); }
-  .subtitle { font-size: 0.8rem; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
-  @media (min-width: 480px) { .logo { font-size: 2.8rem; } }
+    #app {
+      width: 100%;
+      max-width: 700px;
+      padding: 1.25rem;
+      position: relative;
+      z-index: 1;
+    }
 
-  /* NAV TABS */
-  .nav-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; }
-  .nav-tab { flex: 1; background: transparent; border: 1px solid transparent; border-radius: 4px; color: var(--muted); font-family: 'Rajdhani', sans-serif; font-size: 0.9rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 0.5rem; cursor: pointer; transition: all 0.15s; -webkit-tap-highlight-color: transparent; }
-  .nav-tab.active { border-color: var(--red); color: var(--red); }
+    /* HEADER */
+    .header {
+      text-align: center;
+      margin-bottom: 1.25rem;
+    }
 
-  /* LOADING */
-  .loading-screen { display: none; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 1rem; text-align: center; }
-  .loading-screen.active { display: flex; }
-  .loader { width: 44px; height: 44px; border: 3px solid var(--bg3); border-top-color: var(--red); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 1rem; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { color: var(--muted); font-size: 0.9rem; letter-spacing: 1px; }
-  .loading-sub { color: var(--bg3); font-size: 0.75rem; margin-top: 0.4rem; }
+    .logo {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 2.4rem;
+      font-weight: 700;
+      letter-spacing: 4px;
+      color: var(--red);
+      text-transform: uppercase;
+      text-shadow: 0 0 20px var(--red-glow);
+    }
 
-  .error-banner { background: rgba(255,70,85,0.1); border: 1px solid var(--border); border-radius: 4px; padding: 0.6rem 0.9rem; margin-bottom: 0.75rem; font-size: 0.85rem; color: var(--red); display: none; }
-  .error-banner.active { display: block; }
+    .logo span {
+      color: var(--text);
+    }
 
-  .api-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 0.7rem; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 1.25rem; }
-  .api-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
-  .api-dot.loading { background: var(--gold); animation: dot-blink 1s infinite; }
-  .api-dot.error { background: var(--red); }
-  @keyframes dot-blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .subtitle {
+      font-size: 0.8rem;
+      color: var(--muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
 
-  /* PLAYER INPUT */
-  .player-input-row { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; width: 100%; }
-  .input-label { font-family: 'Rajdhani', sans-serif; font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); }
-  .tag-input {
-    width: 100%; background: var(--bg2); border: 1px solid var(--border); border-radius: 4px;
-    color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 1rem;
-    padding: 0.75rem 1rem; outline: none; transition: border-color 0.15s;
-  }
-  .tag-input::placeholder { color: var(--muted); }
-  .tag-input:focus { border-color: var(--red); }
+    @media (min-width: 480px) {
+      .logo {
+        font-size: 2.8rem;
+      }
+    }
 
-  /* CURRENT PLAYER BADGE */
-  .player-badge {
-    display: none; align-items: center; gap: 0.6rem;
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: 4px; padding: 0.6rem 0.9rem; margin-bottom: 1rem;
-  }
-  .player-badge.visible { display: flex; }
-  .player-badge img { width: 28px; height: 28px; object-fit: contain; }
-  .player-badge-name { font-family: 'Rajdhani', sans-serif; font-size: 1rem; font-weight: 700; color: var(--text); }
-  .player-badge-rank { font-size: 0.75rem; color: var(--muted); margin-left: auto; }
+    /* NAV TABS */
+    .nav-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.75rem;
+    }
 
-  /* DIFF */
-  .section-label { font-family: 'Rajdhani', sans-serif; font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
-  .diff-grid { display: flex; gap: 0.5rem; margin-bottom: 1.25rem; width: 100%; }
-  .diff-btn { flex: 1; padding: 0.6rem 0.4rem; border-radius: 4px; cursor: pointer; border: 1px solid var(--border); background: var(--bg2); color: var(--muted); font-family: 'Rajdhani', sans-serif; font-size: 0.9rem; font-weight: 600; letter-spacing: 1px; transition: all 0.15s; -webkit-tap-highlight-color: transparent; }
-  .diff-btn:active, .diff-btn.active { border-color: var(--red); color: var(--text); }
-  .diff-btn .diff-icon { font-size: 1.2rem; display: block; margin-bottom: 3px; }
-  .diff-btn .diff-name { text-transform: uppercase; display: block; font-size: 0.85rem; }
-  .diff-btn .diff-desc { font-size: 0.58rem; color: var(--muted); font-family: 'DM Sans', sans-serif; margin-top: 2px; display: block; }
+    .nav-tab {
+      flex: 1;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      color: var(--muted);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 0.5rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-  /* SCREENS */
-  .screen { display: none; flex-direction: column; align-items: center; text-align: center; }
-  .screen.active { display: flex; }
-  .screen-icon { font-size: 3.5rem; margin-bottom: 0.75rem; }
-  .screen-title { font-family: 'Rajdhani', sans-serif; font-size: 2rem; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 0.4rem; }
-  .screen-sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.25rem; line-height: 1.6; }
-  @media (min-width: 480px) { .screen-icon { font-size: 4.5rem; } .screen-title { font-size: 2.4rem; } }
+    .nav-tab.active {
+      border-color: var(--red);
+      color: var(--red);
+    }
 
-  .btn-primary { background: var(--red); border: none; border-radius: 4px; color: #fff; font-family: 'Rajdhani', sans-serif; font-size: 1.05rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 0.85rem 2rem; cursor: pointer; transition: all 0.15s; box-shadow: 0 0 20px var(--red-glow); width: 100%; max-width: 320px; -webkit-tap-highlight-color: transparent; }
-  .btn-primary:active { background: #ff2035; }
-  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-  @media (hover: hover) { .btn-primary:hover:not(:disabled) { background: #ff2035; } }
+    /* LOADING */
+    .loading-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1rem;
+      text-align: center;
+    }
 
-  /* POINTS GAINED BANNER */
-  .points-banner { display: flex; align-items: center; justify-content: center; gap: 0.75rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 0.75rem 1rem; margin-bottom: 1.25rem; width: 100%; }
-  .points-big { font-family: 'Rajdhani', sans-serif; font-size: 2rem; font-weight: 700; color: var(--gold); }
-  .points-label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+    .loading-screen.active {
+      display: flex;
+    }
 
-  /* RANK CARD */
-  .rank-card { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; margin-bottom: 1.25rem; width: 100%; }
-  .rank-card img { width: 64px; height: 64px; object-fit: contain; }
-  .rank-name { font-family: 'Rajdhani', sans-serif; font-size: 1.3rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
-  .rank-pts { font-size: 0.8rem; color: var(--muted); }
-  .rank-progress-track { height: 6px; width: 100%; background: var(--bg3); border-radius: 3px; overflow: hidden; }
-  .rank-progress-fill { height: 100%; border-radius: 3px; background: var(--gold); transition: width 0.6s ease; }
+    .loader {
+      width: 44px;
+      height: 44px;
+      border: 3px solid var(--bg3);
+      border-top-color: var(--red);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 1rem;
+    }
 
-  /* STAT GRID */
-  .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; width: 100%; margin-bottom: 1.25rem; }
-  .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 0.65rem; text-align: center; }
-  .stat-val { font-family: 'Rajdhani', sans-serif; font-size: 1.5rem; font-weight: 700; }
-  .stat-lbl { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
 
-  /* LEADERBOARD */
-  .leaderboard { width: 100%; }
-  .lb-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 4px; margin-bottom: 0.4rem; background: var(--bg2); border: 1px solid transparent; transition: border-color 0.2s; }
-  .lb-row.me { border-color: var(--red); }
-  .lb-pos { font-family: 'Rajdhani', sans-serif; font-size: 1rem; font-weight: 700; color: var(--muted); min-width: 22px; text-align: center; }
-  .lb-pos.gold   { color: #FFD700; }
-  .lb-pos.silver { color: #C0C0C0; }
-  .lb-pos.bronze { color: #CD7F32; }
-  .lb-rank-icon { width: 28px; height: 28px; object-fit: contain; flex-shrink: 0; }
-  .lb-name { font-size: 0.95rem; font-weight: 500; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .lb-pts { font-family: 'Rajdhani', sans-serif; font-size: 1rem; font-weight: 700; color: var(--gold); }
-  .lb-empty { text-align: center; color: var(--muted); font-size: 0.9rem; padding: 2rem 0; }
-  .lb-title { font-family: 'Rajdhani', sans-serif; font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 0.75rem; text-align: center; }
+    .loading-text {
+      color: var(--muted);
+      font-size: 0.9rem;
+      letter-spacing: 1px;
+    }
 
-  /* SPIKE BAR */
-  .spike-bar { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 0.85rem 1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem; }
-  .spike-icon { font-size: 1.4rem; flex-shrink: 0; animation: spike-pulse 2s ease-in-out infinite; }
-  @keyframes spike-pulse { 0%,100%{filter:drop-shadow(0 0 4px var(--red-glow))} 50%{filter:drop-shadow(0 0 12px var(--red-glow))} }
-  .spike-meta { flex: 1; }
-  .spike-label { font-family: 'Rajdhani', sans-serif; font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
-  .timer-track { height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden; margin-top: 5px; }
-  .timer-fill { height: 100%; border-radius: 3px; transition: width 1s linear, background 0.5s; background: var(--red); }
-  .timer-display { font-family: 'Rajdhani', sans-serif; font-size: 1.7rem; font-weight: 700; color: var(--red); min-width: 48px; text-align: right; }
+    .loading-sub {
+      color: var(--bg3);
+      font-size: 0.75rem;
+      margin-top: 0.4rem;
+    }
 
-  /* PROGRESS */
-  .progress-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
-  .progress-label { font-size: 0.75rem; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
-  .progress-dots { display: flex; gap: 5px; flex-wrap: wrap; max-width: 60%; justify-content: flex-end; }
-  .dot { width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid var(--muted); transition: all 0.3s; flex-shrink: 0; }
-  .dot.correct { background: var(--green); border-color: var(--green); box-shadow: 0 0 6px var(--green-glow); }
-  .dot.wrong { background: var(--red); border-color: var(--red); }
-  .dot.current { border-color: var(--red); animation: dot-blink 1s ease-in-out infinite; }
+    .error-banner {
+      background: rgba(255, 70, 85, 0.1);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.6rem 0.9rem;
+      margin-bottom: 0.75rem;
+      font-size: 0.85rem;
+      color: var(--red);
+      display: none;
+    }
 
-  /* QUESTION CARD */
-  .question-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 1rem 1.1rem; margin-bottom: 1rem; position: relative; overflow: hidden; display: flex; align-items: flex-start; gap: 0.85rem; }
-  .question-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--red), var(--red-dark)); }
-  .question-body { flex: 1; min-width: 0; }
-  .question-category { font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase; color: var(--red); margin-bottom: 0.5rem; font-weight: 600; }
-  .question-text { font-size: 1rem; line-height: 1.5; color: var(--text); font-weight: 500; }
-  .agent-portrait { width: 48px; height: 48px; border-radius: 4px; object-fit: cover; border: 1px solid var(--border); flex-shrink: 0; background: var(--bg3); display: none; }
-  .agent-portrait.visible { display: block; }
+    .error-banner.active {
+      display: block;
+    }
 
-  /* OPTIONS */
-  .options { display: grid; grid-template-columns: 1fr; gap: 0.5rem; margin-bottom: 0.5rem; }
-  .option-btn { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 0.85rem 1rem; color: var(--text); cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 1rem; text-align: left; transition: all 0.15s; display: flex; align-items: center; gap: 0.75rem; width: 100%; -webkit-tap-highlight-color: transparent; }
-  .option-key { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 0.85rem; color: var(--red); min-width: 20px; flex-shrink: 0; }
-  .option-btn:active:not(:disabled) { border-color: var(--red); background: rgba(255,70,85,0.08); }
-  @media (hover: hover) { .option-btn:hover:not(:disabled) { border-color: var(--red); background: rgba(255,70,85,0.08); } }
-  .option-btn.correct { border-color: var(--green); background: rgba(60,191,110,0.12); color: var(--green); }
-  .option-btn.wrong { border-color: var(--red); background: rgba(255,70,85,0.12); color: var(--red); }
-  .option-btn:disabled { cursor: default; }
-  @media (min-width: 480px) { .options { grid-template-columns: 1fr 1fr; } }
+    .api-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 1.25rem;
+    }
 
-  .feedback { text-align: center; font-size: 0.9rem; min-height: 1.4rem; color: var(--muted); padding: 0.4rem 0; }
-  .feedback.correct { color: var(--green); }
-  .feedback.wrong { color: var(--red); }
+    .api-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      flex-shrink: 0;
+    }
 
-  /* ROUND BADGE + SCORE LIVE */
-  .game-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.4rem; }
-  .round-badge { font-family: 'Rajdhani', sans-serif; font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); }
-  .score-live { font-family: 'Rajdhani', sans-serif; font-size: 0.9rem; font-weight: 700; color: var(--gold); }
+    .api-dot.loading {
+      background: var(--gold);
+      animation: dot-blink 1s infinite;
+    }
 
-  #game-area { display: none; }
-  #game-area.active { display: block; }
+    .api-dot.error {
+      background: var(--red);
+    }
 
-  /* OVERLAYS */
-  .explosion-overlay { display: none; position: fixed; inset: 0; z-index: 500; pointer-events: none; }
-  .explosion-overlay.active { display: block; animation: explode 0.9s ease-out forwards; }
-  @keyframes explode { 0%{background:rgba(0,0,0,0)} 10%{background:rgba(255,70,85,0.9)} 30%{background:rgba(255,150,0,0.7)} 60%{background:rgba(255,70,85,0.3)} 100%{background:rgba(0,0,0,0)} }
-  .defuse-overlay { display: none; position: fixed; inset: 0; z-index: 500; pointer-events: none; }
-  .defuse-overlay.active { display: block; animation: defuse-flash 0.8s ease-out forwards; }
-  @keyframes defuse-flash { 0%{background:rgba(0,0,0,0)} 15%{background:rgba(60,191,110,0.5)} 100%{background:rgba(0,0,0,0)} }
+    @keyframes dot-blink {
 
-  .questions-count { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; }
-  .btn-link { background: transparent; border: none; color: var(--muted); font-size: 0.85rem; cursor: pointer; text-decoration: underline; margin-top: 0.75rem; -webkit-tap-highlight-color: transparent; }
-</style>
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0.4
+      }
+    }
+
+    /* PLAYER INPUT */
+    .player-input-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      width: 100%;
+    }
+
+    .input-label {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .tag-input {
+      width: 100%;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      padding: 0.75rem 1rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .tag-input::placeholder {
+      color: var(--muted);
+    }
+
+    .tag-input:focus {
+      border-color: var(--red);
+    }
+
+    /* CURRENT PLAYER BADGE */
+    .player-badge {
+      display: none;
+      align-items: center;
+      gap: 0.6rem;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.6rem 0.9rem;
+      margin-bottom: 1rem;
+    }
+
+    .player-badge.visible {
+      display: flex;
+    }
+
+    .player-badge img {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+    }
+
+    .player-badge-name {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .player-badge-rank {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-left: auto;
+    }
+
+    /* DIFF */
+    .section-label {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .diff-grid {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+      width: 100%;
+    }
+
+    .diff-btn {
+      flex: 1;
+      padding: 0.6rem 0.4rem;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--bg2);
+      color: var(--muted);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .diff-btn:active,
+    .diff-btn.active {
+      border-color: var(--red);
+      color: var(--text);
+    }
+
+    .diff-btn .diff-icon {
+      font-size: 1.2rem;
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .diff-btn .diff-name {
+      text-transform: uppercase;
+      display: block;
+      font-size: 0.85rem;
+    }
+
+    .diff-btn .diff-desc {
+      font-size: 0.58rem;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      margin-top: 2px;
+      display: block;
+    }
+
+    /* SCREENS */
+    .screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    .screen-icon {
+      font-size: 3.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .screen-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 0.4rem;
+    }
+
+    .screen-sub {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 1.25rem;
+      line-height: 1.6;
+    }
+
+    @media (min-width: 480px) {
+      .screen-icon {
+        font-size: 4.5rem;
+      }
+
+      .screen-title {
+        font-size: 2.4rem;
+      }
+    }
+
+    .btn-primary {
+      background: var(--red);
+      border: none;
+      border-radius: 4px;
+      color: #fff;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 0.85rem 2rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      box-shadow: 0 0 20px var(--red-glow);
+      width: 100%;
+      max-width: 320px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-primary:active {
+      background: #ff2035;
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    @media (hover: hover) {
+      .btn-primary:hover:not(:disabled) {
+        background: #ff2035;
+      }
+    }
+
+    /* POINTS GAINED BANNER */
+    .points-banner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1.25rem;
+      width: 100%;
+    }
+
+    .points-big {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--gold);
+    }
+
+    .points-label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* RANK CARD */
+    .rank-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+      margin-bottom: 1.25rem;
+      width: 100%;
+    }
+
+    .rank-card img {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+    }
+
+    .rank-name {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .rank-pts {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .rank-progress-track {
+      height: 6px;
+      width: 100%;
+      background: var(--bg3);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .rank-progress-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: var(--gold);
+      transition: width 0.6s ease;
+    }
+
+    /* STAT GRID */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.6rem;
+      width: 100%;
+      margin-bottom: 1.25rem;
+    }
+
+    .stat-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.65rem;
+      text-align: center;
+    }
+
+    .stat-val {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .stat-lbl {
+      font-size: 0.65rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* LEADERBOARD */
+    .leaderboard {
+      width: 100%;
+    }
+
+    .lb-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.6rem 0.75rem;
+      border-radius: 4px;
+      margin-bottom: 0.4rem;
+      background: var(--bg2);
+      border: 1px solid transparent;
+      transition: border-color 0.2s;
+    }
+
+    .lb-row.me {
+      border-color: var(--red);
+    }
+
+    .lb-pos {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--muted);
+      min-width: 22px;
+      text-align: center;
+    }
+
+    .lb-pos.gold {
+      color: #FFD700;
+    }
+
+    .lb-pos.silver {
+      color: #C0C0C0;
+    }
+
+    .lb-pos.bronze {
+      color: #CD7F32;
+    }
+
+    .lb-rank-icon {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+
+    .lb-name {
+      font-size: 0.95rem;
+      font-weight: 500;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .lb-pts {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--gold);
+    }
+
+    .lb-empty {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+      padding: 2rem 0;
+    }
+
+    .lb-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+      text-align: center;
+    }
+
+    /* SPIKE BAR */
+    .spike-bar {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.85rem 1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .spike-icon {
+      font-size: 1.4rem;
+      flex-shrink: 0;
+      animation: spike-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes spike-pulse {
+
+      0%,
+      100% {
+        filter: drop-shadow(0 0 4px var(--red-glow))
+      }
+
+      50% {
+        filter: drop-shadow(0 0 12px var(--red-glow))
+      }
+    }
+
+    .spike-meta {
+      flex: 1;
+    }
+
+    .spike-label {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 3px;
+    }
+
+    .timer-track {
+      height: 6px;
+      background: var(--bg3);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 5px;
+    }
+
+    .timer-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 1s linear, background 0.5s;
+      background: var(--red);
+    }
+
+    .timer-display {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.7rem;
+      font-weight: 700;
+      color: var(--red);
+      min-width: 48px;
+      text-align: right;
+    }
+
+    /* PROGRESS */
+    .progress-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+
+    .progress-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .progress-dots {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      max-width: 60%;
+      justify-content: flex-end;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      border: 1.5px solid var(--muted);
+      transition: all 0.3s;
+      flex-shrink: 0;
+    }
+
+    .dot.correct {
+      background: var(--green);
+      border-color: var(--green);
+      box-shadow: 0 0 6px var(--green-glow);
+    }
+
+    .dot.wrong {
+      background: var(--red);
+      border-color: var(--red);
+    }
+
+    .dot.current {
+      border-color: var(--red);
+      animation: dot-blink 1s ease-in-out infinite;
+    }
+
+    /* QUESTION CARD */
+    .question-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem 1.1rem;
+      margin-bottom: 1rem;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.85rem;
+    }
+
+    .question-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--red), var(--red-dark));
+    }
+
+    .question-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .question-category {
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    .question-text {
+      font-size: 1rem;
+      line-height: 1.5;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .agent-portrait {
+      width: 48px;
+      height: 48px;
+      border-radius: 4px;
+      object-fit: cover;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+      background: var(--bg3);
+      display: none;
+    }
+
+    .agent-portrait.visible {
+      display: block;
+    }
+
+    /* OPTIONS */
+    .options {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .option-btn {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.85rem 1rem;
+      color: var(--text);
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      text-align: left;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      width: 100%;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .option-key {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--red);
+      min-width: 20px;
+      flex-shrink: 0;
+    }
+
+    .option-btn:active:not(:disabled) {
+      border-color: var(--red);
+      background: rgba(255, 70, 85, 0.08);
+    }
+
+    @media (hover: hover) {
+      .option-btn:hover:not(:disabled) {
+        border-color: var(--red);
+        background: rgba(255, 70, 85, 0.08);
+      }
+    }
+
+    .option-btn.correct {
+      border-color: var(--green);
+      background: rgba(60, 191, 110, 0.12);
+      color: var(--green);
+    }
+
+    .option-btn.wrong {
+      border-color: var(--red);
+      background: rgba(255, 70, 85, 0.12);
+      color: var(--red);
+    }
+
+    .option-btn:disabled {
+      cursor: default;
+    }
+
+    @media (min-width: 480px) {
+      .options {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .feedback {
+      text-align: center;
+      font-size: 0.9rem;
+      min-height: 1.4rem;
+      color: var(--muted);
+      padding: 0.4rem 0;
+    }
+
+    .feedback.correct {
+      color: var(--green);
+    }
+
+    .feedback.wrong {
+      color: var(--red);
+    }
+
+    /* ROUND BADGE + SCORE LIVE */
+    .game-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.4rem;
+    }
+
+    .round-badge {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .score-live {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--gold);
+    }
+
+    #game-area {
+      display: none;
+    }
+
+    #game-area.active {
+      display: block;
+    }
+
+    /* OVERLAYS */
+    .explosion-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      pointer-events: none;
+    }
+
+    .explosion-overlay.active {
+      display: block;
+      animation: explode 0.9s ease-out forwards;
+    }
+
+    @keyframes explode {
+      0% {
+        background: rgba(0, 0, 0, 0)
+      }
+
+      10% {
+        background: rgba(255, 70, 85, 0.9)
+      }
+
+      30% {
+        background: rgba(255, 150, 0, 0.7)
+      }
+
+      60% {
+        background: rgba(255, 70, 85, 0.3)
+      }
+
+      100% {
+        background: rgba(0, 0, 0, 0)
+      }
+    }
+
+    .defuse-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      pointer-events: none;
+    }
+
+    .defuse-overlay.active {
+      display: block;
+      animation: defuse-flash 0.8s ease-out forwards;
+    }
+
+    @keyframes defuse-flash {
+      0% {
+        background: rgba(0, 0, 0, 0)
+      }
+
+      15% {
+        background: rgba(60, 191, 110, 0.5)
+      }
+
+      100% {
+        background: rgba(0, 0, 0, 0)
+      }
+    }
+
+    .questions-count {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
+
+    .btn-link {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-decoration: underline;
+      margin-top: 0.75rem;
+      -webkit-tap-highlight-color: transparent;
+    }
+  </style>
 
 </head>
+
 <body>
-<div class="scanlines"></div>
-<div class="explosion-overlay" id="explosion"></div>
-<div class="defuse-overlay" id="defuse"></div>
+  <div class="scanlines"></div>
+  <div class="explosion-overlay" id="explosion"></div>
+  <div class="defuse-overlay" id="defuse"></div>
 
-<div id="app">
-  <div class="header">
-    <div class="logo">Valo<span>Quiz</span></div>
-    <div class="subtitle">Defuse the Spike</div>
-  </div>
+  <div id="app">
+    <div class="header">
+      <div class="logo">Valo<span>Quiz</span></div>
+      <div class="subtitle">Defuse the Spike</div>
+    </div>
 
-  <!-- NAV -->
-  <div class="nav-tabs" id="main-nav">
-    <button class="nav-tab active" onclick="showTab('start')">Jugar</button>
-    <button class="nav-tab" onclick="showTab('leaderboard')">Ranking</button>
-  </div>
+    <!-- NAV -->
+    <div class="nav-tabs" id="main-nav">
+      <button class="nav-tab active" onclick="showTab('start')">Jugar</button>
+      <button class="nav-tab" onclick="showTab('leaderboard')">Ranking</button>
+    </div>
 
-  <!-- LOADING -->
-  <div class="loading-screen" id="screen-loading">
-    <div class="loader"></div>
-    <div class="loading-text">Cargando datos de Valorant...</div>
-    <div class="loading-sub">valorant-api.com</div>
-  </div>
+    <!-- LOADING -->
+    <div class="loading-screen" id="screen-loading">
+      <div class="loader"></div>
+      <div class="loading-text">Cargando datos de Valorant...</div>
+      <div class="loading-sub">valorant-api.com</div>
+    </div>
 
-  <div class="error-banner" id="error-banner">Sin conexión a la API — usando preguntas de respaldo.</div>
+    <div class="error-banner" id="error-banner">Sin conexión a la API — usando preguntas de respaldo.</div>
 
-  <!-- START TAB -->
-  <div id="tab-start" style="display:none">
-    <div class="screen active" id="screen-start">
+    <!-- START TAB -->
+    <div id="tab-start" style="display:none">
+      <div class="screen active" id="screen-start">
 
-      <!-- PLAYER TAG -->
-      <div class="player-input-row">
-        <div class="input-label">Tu tag de Valorant</div>
-        <input class="tag-input" id="player-tag" type="text" placeholder="Jugador#TAG" maxlength="32" autocomplete="off" spellcheck="false">
+        <!-- PLAYER TAG -->
+        <div class="player-input-row">
+          <div class="input-label">Tu tag de Valorant</div>
+          <input class="tag-input" id="player-tag" type="text" placeholder="Jugador#TAG" maxlength="32"
+            autocomplete="off" spellcheck="false">
+        </div>
+
+        <div class="api-badge">
+          <span class="api-dot loading" id="api-dot"></span>
+          <span id="api-label">Conectando a valorant-api.com...</span>
+        </div>
+
+        <div style="width:100%; margin-bottom:0.5rem">
+          <div class="section-label">Dificultad</div>
+          <div class="diff-grid">
+            <button class="diff-btn" data-diff="easy">
+              <span class="diff-icon">🟢</span>
+              <span class="diff-name">Fácil</span>
+              <span class="diff-desc">90s · 5 preguntas · x1</span>
+            </button>
+            <button class="diff-btn active" data-diff="medium">
+              <span class="diff-icon">🔴</span>
+              <span class="diff-name">Normal</span>
+              <span class="diff-desc">60s · 8 preguntas · x1.5</span>
+            </button>
+            <button class="diff-btn" data-diff="hard">
+              <span class="diff-icon">💀</span>
+              <span class="diff-name">Ace</span>
+              <span class="diff-desc">45s · 10 preguntas · x2.5</span>
+            </button>
+          </div>
+        </div>
+
+        <button class="btn-primary" id="btn-start" onclick="startGame()" disabled>Cargando...</button>
+        <div class="questions-count" id="questions-count"></div>
+      </div>
+    </div>
+
+    <!-- LEADERBOARD TAB -->
+    <div id="tab-leaderboard" style="display:none">
+      <div class="lb-title">Top jugadores</div>
+      <div class="leaderboard" id="lb-list"></div>
+      <button class="btn-link" onclick="clearLeaderboard()">Borrar ranking</button>
+    </div>
+
+    <!-- GAME -->
+    <div id="game-area">
+      <div class="spike-bar">
+        <div class="spike-icon">💣</div>
+        <div class="spike-meta">
+          <div class="spike-label">Tiempo restante</div>
+          <div class="timer-track">
+            <div class="timer-fill" id="timer-fill"></div>
+          </div>
+        </div>
+        <div class="timer-display" id="timer-display">60</div>
       </div>
 
-      <div class="api-badge">
-        <span class="api-dot loading" id="api-dot"></span>
-        <span id="api-label">Conectando a valorant-api.com...</span>
+      <div class="progress-row">
+        <div class="progress-label">Progreso</div>
+        <div class="progress-dots" id="dots"></div>
+      </div>
+      <div class="game-meta">
+        <div class="round-badge" id="round-badge">Pregunta 1 / 8</div>
+        <div class="score-live" id="score-live">0 pts</div>
       </div>
 
-      <div style="width:100%; margin-bottom:0.5rem">
-        <div class="section-label">Dificultad</div>
-        <div class="diff-grid">
-          <button class="diff-btn" data-diff="easy">
-            <span class="diff-icon">🟢</span>
-            <span class="diff-name">Fácil</span>
-            <span class="diff-desc">90s · 5 preguntas · x1</span>
-          </button>
-          <button class="diff-btn active" data-diff="medium">
-            <span class="diff-icon">🔴</span>
-            <span class="diff-name">Normal</span>
-            <span class="diff-desc">60s · 8 preguntas · x1.5</span>
-          </button>
-          <button class="diff-btn" data-diff="hard">
-            <span class="diff-icon">💀</span>
-            <span class="diff-name">Ace</span>
-            <span class="diff-desc">45s · 10 preguntas · x2.5</span>
-          </button>
+      <div class="question-card">
+        <img class="agent-portrait" id="agent-portrait" alt="">
+        <div class="question-body">
+          <div class="question-category" id="q-category">Agentes</div>
+          <div class="question-text" id="q-text">Cargando...</div>
         </div>
       </div>
+      <div class="options" id="options"></div>
+      <div class="feedback" id="feedback"></div>
+    </div>
 
-      <button class="btn-primary" id="btn-start" onclick="startGame()" disabled>Cargando...</button>
-      <div class="questions-count" id="questions-count"></div>
+    <!-- WIN -->
+    <div class="screen" id="screen-win">
+      <div class="screen-icon">✅</div>
+      <div class="screen-title" style="color:var(--green)">Spike desactivada</div>
+      <div class="screen-sub" id="win-sub"></div>
+      <div class="points-banner" id="win-points"></div>
+      <div class="rank-card" id="win-rank"></div>
+      <div class="stat-grid" id="win-stats"></div>
+      <button class="btn-primary" style="background:var(--green);box-shadow:0 0 20px var(--green-glow)"
+        onclick="goHome()">Nueva ronda</button>
+      <button class="btn-link" onclick="showTab('leaderboard');goHome()">Ver ranking</button>
+    </div>
+
+    <!-- LOSE -->
+    <div class="screen" id="screen-lose">
+      <div class="screen-icon">💥</div>
+      <div class="screen-title" style="color:var(--red)">Spike detonada</div>
+      <div class="screen-sub" id="lose-sub"></div>
+      <div class="points-banner" id="lose-points"></div>
+      <div class="rank-card" id="lose-rank"></div>
+      <div class="stat-grid" id="lose-stats"></div>
+      <button class="btn-primary" onclick="goHome()">Reintentar</button>
+      <button class="btn-link" onclick="showTab('leaderboard');goHome()">Ver ranking</button>
     </div>
   </div>
 
-  <!-- LEADERBOARD TAB -->
-  <div id="tab-leaderboard" style="display:none">
-    <div class="lb-title">Top jugadores</div>
-    <div class="leaderboard" id="lb-list"></div>
-    <button class="btn-link" onclick="clearLeaderboard()">Borrar ranking</button>
-  </div>
+  <script>
 
-  <!-- GAME -->
-  <div id="game-area">
-    <div class="spike-bar">
-      <div class="spike-icon">💣</div>
-      <div class="spike-meta">
-        <div class="spike-label">Tiempo restante</div>
-        <div class="timer-track"><div class="timer-fill" id="timer-fill"></div></div>
-      </div>
-      <div class="timer-display" id="timer-display">60</div>
-    </div>
+    // ---- CONFIG ----
+    const DIFF = {
+      easy: { time: 90, needed: 5, mult: 1.0 },
+      medium: { time: 60, needed: 8, mult: 1.5 },
+      hard: { time: 45, needed: 10, mult: 2.5 },
+    };
+    const PTS_PER_CORRECT = 100;
+    const PTS_PER_SEC = 5;
 
-    <div class="progress-row">
-      <div class="progress-label">Progreso</div>
-      <div class="progress-dots" id="dots"></div>
-    </div>
-    <div class="game-meta">
-      <div class="round-badge" id="round-badge">Pregunta 1 / 8</div>
-      <div class="score-live" id="score-live">0 pts</div>
-    </div>
+    // ---- VALORANT RANKS ----
+    const RANKS = [
+      { name: 'Hierro', min: 0, color: '#8a8f96' },
+      { name: 'Bronce', min: 500, color: '#b87333' },
+      { name: 'Plata', min: 1200, color: '#a8b2bd' },
+      { name: 'Oro', min: 2500, color: '#e8c84a' },
+      { name: 'Platino', min: 4500, color: '#47c9a2' },
+      { name: 'Diamante', min: 7500, color: '#8b5cf6' },
+      { name: 'Ascendente', min: 12000, color: '#22d3ee' },
+      { name: 'Inmortal', min: 18000, color: '#ef4444' },
+      { name: 'Radiante', min: 27000, color: '#ffd700' },
+    ];
 
-    <div class="question-card">
-      <img class="agent-portrait" id="agent-portrait" alt="">
-      <div class="question-body">
-        <div class="question-category" id="q-category">Agentes</div>
-        <div class="question-text" id="q-text">Cargando...</div>
-      </div>
-    </div>
-    <div class="options" id="options"></div>
-    <div class="feedback" id="feedback"></div>
-  </div>
+    let rankIcons = {};  // name → icon url from API
 
-  <!-- WIN -->
-  <div class="screen" id="screen-win">
-    <div class="screen-icon">✅</div>
-    <div class="screen-title" style="color:var(--green)">Spike desactivada</div>
-    <div class="screen-sub" id="win-sub"></div>
-    <div class="points-banner" id="win-points"></div>
-    <div class="rank-card" id="win-rank"></div>
-    <div class="stat-grid" id="win-stats"></div>
-    <button class="btn-primary" style="background:var(--green);box-shadow:0 0 20px var(--green-glow)" onclick="goHome()">Nueva ronda</button>
-    <button class="btn-link" onclick="showTab('leaderboard');goHome()">Ver ranking</button>
-  </div>
+    function getRank(pts) {
+      let rank = RANKS[0];
+      for (const r of RANKS) { if (pts >= r.min) rank = r; else break; }
+      return rank;
+    }
 
-  <!-- LOSE -->
-  <div class="screen" id="screen-lose">
-    <div class="screen-icon">💥</div>
-    <div class="screen-title" style="color:var(--red)">Spike detonada</div>
-    <div class="screen-sub" id="lose-sub"></div>
-    <div class="points-banner" id="lose-points"></div>
-    <div class="rank-card" id="lose-rank"></div>
-    <div class="stat-grid" id="lose-stats"></div>
-    <button class="btn-primary" onclick="goHome()">Reintentar</button>
-    <button class="btn-link" onclick="showTab('leaderboard');goHome()">Ver ranking</button>
-  </div>
-</div>
+    function getNextRank(pts) {
+      for (const r of RANKS) { if (pts < r.min) return r; }
+      return null;
+    }
 
-<script>
+    function rankProgress(pts) {
+      const rank = getRank(pts);
+      const next = getNextRank(pts);
+      if (!next) return 100;
+      return Math.round(((pts - rank.min) / (next.min - rank.min)) * 100);
+    }
 
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-const supabaseUrl = 'https://smnjhriwbrfpvdfiiapo.supabase.co'
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtbmpocml3YnJmcHZkZmlpYXBvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MjIzNjAsImV4cCI6MjA5ODA5ODM2MH0.K4bBhJhRjeqCDl2i5XT2oMBpcJjZfVvZnl5eaWQqqhQ'
+    // ---- LEADERBOARD (localStorage) ----
+    function loadLB() {
+      try { return JSON.parse(localStorage.getItem('valoquiz_lb') || '[]'); } catch { return []; }
+    }
+    function saveLB(lb) { localStorage.setItem('valoquiz_lb', JSON.stringify(lb)); }
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
+    function addScore(tag, pts) {
+      const lb = loadLB();
+      const existing = lb.find(e => e.tag.toLowerCase() === tag.toLowerCase());
+      if (existing) { existing.pts += pts; existing.games = (existing.games || 1) + 1; }
+      else lb.push({ tag, pts, games: 1 });
+      lb.sort((a, b) => b.pts - a.pts);
+      saveLB(lb.slice(0, 50));
+      return lb;
+    }
 
-async function obtenerDatos() {
-            const { data, error } = await supabase
-                .from('jugador')
-                .select('*')
+    function getPlayerPts(tag) {
+      const lb = loadLB();
+      const e = lb.find(e => e.tag.toLowerCase() === tag.toLowerCase());
+      return e ? e.pts : 0;
+    }
 
-            if (error) {
-                console.error('Error:', error)
-            } else {
-                console.log('Datos de Supabase:', data)
-            }
-        }
-        obtenerDatos()
+    function clearLeaderboard() {
+      if (confirm('¿Borrar todo el ranking?')) { localStorage.removeItem('valoquiz_lb'); renderLB(); }
+    }
 
-
-// ---- CONFIG ----
-const DIFF = {
-  easy:   { time: 90, needed: 5,  mult: 1.0  },
-  medium: { time: 60, needed: 8,  mult: 1.5  },
-  hard:   { time: 45, needed: 10, mult: 2.5  },
-};
-const PTS_PER_CORRECT = 100;
-const PTS_PER_SEC = 5;
-
-// ---- VALORANT RANKS ----
-const RANKS = [
-  { name: 'Hierro',      min: 0,     color: '#8a8f96' },
-  { name: 'Bronce',      min: 500,   color: '#b87333' },
-  { name: 'Plata',       min: 1200,  color: '#a8b2bd' },
-  { name: 'Oro',         min: 2500,  color: '#e8c84a' },
-  { name: 'Platino',     min: 4500,  color: '#47c9a2' },
-  { name: 'Diamante',    min: 7500,  color: '#8b5cf6' },
-  { name: 'Ascendente',  min: 12000, color: '#22d3ee' },
-  { name: 'Inmortal',    min: 18000, color: '#ef4444' },
-  { name: 'Radiante',    min: 27000, color: '#ffd700' },
-];
-
-let rankIcons = {};  // name → icon url from API
-
-function getRank(pts) {
-  let rank = RANKS[0];
-  for (const r of RANKS) { if (pts >= r.min) rank = r; else break; }
-  return rank;
-}
-
-function getNextRank(pts) {
-  for (const r of RANKS) { if (pts < r.min) return r; }
-  return null;
-}
-
-function rankProgress(pts) {
-  const rank = getRank(pts);
-  const next = getNextRank(pts);
-  if (!next) return 100;
-  return Math.round(((pts - rank.min) / (next.min - rank.min)) * 100);
-}
-
-// ---- LEADERBOARD (localStorage) ----
-function loadLB() {
-  try { return JSON.parse(localStorage.getItem('valoquiz_lb') || '[]'); } catch { return []; }
-}
-function saveLB(lb) { localStorage.setItem('valoquiz_lb', JSON.stringify(lb)); }
-
-function addScore(tag, pts) {
-  const lb = loadLB();
-  const existing = lb.find(e => e.tag.toLowerCase() === tag.toLowerCase());
-  if (existing) { existing.pts += pts; existing.games = (existing.games || 1) + 1; }
-  else lb.push({ tag, pts, games: 1 });
-  lb.sort((a, b) => b.pts - a.pts);
-  saveLB(lb.slice(0, 50));
-  return lb;
-}
-
-function getPlayerPts(tag) {
-  const lb = loadLB();
-  const e = lb.find(e => e.tag.toLowerCase() === tag.toLowerCase());
-  return e ? e.pts : 0;
-}
-
-function clearLeaderboard() {
-  if (confirm('¿Borrar todo el ranking?')) { localStorage.removeItem('valoquiz_lb'); renderLB(); }
-}
-
-function renderLB() {
-  const lb = loadLB();
-  const tag = document.getElementById('player-tag')?.value?.trim() || '';
-  const el = document.getElementById('lb-list');
-  if (!lb.length) { el.innerHTML = '<div class="lb-empty">Sin jugadores aún.<br>¡Sé el primero!</div>'; return; }
-  const posClass = ['gold','silver','bronze'];
-  el.innerHTML = lb.slice(0,15).map((e, i) => {
-    const rank = getRank(e.pts);
-    const icon = rankIcons[rank.name] ? `<img class="lb-rank-icon" src="${rankIcons[rank.name]}" alt="${rank.name}">` : `<span style="font-size:1.1rem">🎖️</span>`;
-    const isMe = tag && e.tag.toLowerCase() === tag.toLowerCase();
-    return `<div class="lb-row ${isMe ? 'me' : ''}">
-      <span class="lb-pos ${posClass[i] || ''}">${i+1}</span>
+    function renderLB() {
+      const lb = loadLB();
+      const tag = document.getElementById('player-tag')?.value?.trim() || '';
+      const el = document.getElementById('lb-list');
+      if (!lb.length) { el.innerHTML = '<div class="lb-empty">Sin jugadores aún.<br>¡Sé el primero!</div>'; return; }
+      const posClass = ['gold', 'silver', 'bronze'];
+      el.innerHTML = lb.slice(0, 15).map((e, i) => {
+        const rank = getRank(e.pts);
+        const icon = rankIcons[rank.name] ? `<img class="lb-rank-icon" src="${rankIcons[rank.name]}" alt="${rank.name}">` : `<span style="font-size:1.1rem">🎖️</span>`;
+        const isMe = tag && e.tag.toLowerCase() === tag.toLowerCase();
+        return `<div class="lb-row ${isMe ? 'me' : ''}">
+      <span class="lb-pos ${posClass[i] || ''}">${i + 1}</span>
       ${icon}
       <span class="lb-name">${e.tag}</span>
       <span style="font-size:0.7rem;color:var(--muted);margin-right:4px">${rank.name}</span>
       <span class="lb-pts">${e.pts.toLocaleString()}</span>
     </div>`;
-  }).join('');
-}
+      }).join('');
+    }
 
-// ---- DATA ----
-let questionPool = [];
-let rankTiers = [];
+    // ---- DATA ----
+    let questionPool = [];
+    let rankTiers = [];
 
-const ROLE_ES = { Duelist:'Duelista', Controller:'Controlador', Initiator:'Iniciador', Sentinel:'Centinela' };
-const WTYPE_ES = {
-  'Assault Rifles':'Fusil de asalto', 'Shotguns':'Escopeta',
-  'Sniper Rifles':'Francotirador', 'Submachine Guns':'Subfusil',
-  'Heavy Weapons':'Arma pesada', 'Pistols':'Pistola',
-  'Melee':'Cuerpo a cuerpo', 'Burst Rifles':'Fusil de ráfaga',
-};
+    const ROLE_ES = { Duelist: 'Duelista', Controller: 'Controlador', Initiator: 'Iniciador', Sentinel: 'Centinela' };
+    const WTYPE_ES = {
+      'Assault Rifles': 'Fusil de asalto', 'Shotguns': 'Escopeta',
+      'Sniper Rifles': 'Francotirador', 'Submachine Guns': 'Subfusil',
+      'Heavy Weapons': 'Arma pesada', 'Pistols': 'Pistola',
+      'Melee': 'Cuerpo a cuerpo', 'Burst Rifles': 'Fusil de ráfaga',
+    };
 
-async function loadData() {
-  document.getElementById('screen-loading').classList.add('active');
-  document.getElementById('tab-start').style.display = 'none';
-  try {
-    const [agentsRes, weaponsRes, mapsRes, tiersRes] = await Promise.all([
-      fetch('https://valorant-api.com/v1/agents?isPlayableCharacter=true&language=es-ES'),
-      fetch('https://valorant-api.com/v1/weapons?language=es-ES'),
-      fetch('https://valorant-api.com/v1/maps?language=es-ES'),
-      fetch('https://valorant-api.com/v1/competitivetiers'),
-    ]);
-    const [agentsData, weaponsData, mapsData, tiersData] = await Promise.all([
-      agentsRes.json(), weaponsRes.json(), mapsRes.json(), tiersRes.json()
-    ]);
+    async function loadData() {
+      document.getElementById('screen-loading').classList.add('active');
+      document.getElementById('tab-start').style.display = 'none';
+      try {
+        const [agentsRes, weaponsRes, mapsRes, tiersRes] = await Promise.all([
+          fetch('https://valorant-api.com/v1/agents?isPlayableCharacter=true&language=es-ES'),
+          fetch('https://valorant-api.com/v1/weapons?language=es-ES'),
+          fetch('https://valorant-api.com/v1/maps?language=es-ES'),
+          fetch('https://valorant-api.com/v1/competitivetiers'),
+        ]);
+        const [agentsData, weaponsData, mapsData, tiersData] = await Promise.all([
+          agentsRes.json(), weaponsRes.json(), mapsRes.json(), tiersRes.json()
+        ]);
 
-    const agents  = agentsData.data  || [];
-    const weapons = (weaponsData.data || []).filter(w => w.shopData);
-    const maps    = mapsData.data    || [];
+        const agents = agentsData.data || [];
+        const weapons = (weaponsData.data || []).filter(w => w.shopData);
+        const maps = mapsData.data || [];
 
-    // Pick the latest tier set and map rank icons
-    const tierSets = tiersData.data || [];
-    const latestTiers = tierSets[tierSets.length - 1]?.tiers || [];
-    const RANK_API_NAMES = ['Iron','Bronze','Silver','Gold','Platinum','Diamond','Ascendant','Immortal','Radiant'];
-    const ES_TO_API = { 'Hierro':'Iron','Bronce':'Bronze','Plata':'Silver','Oro':'Gold','Platino':'Platinum','Diamante':'Diamond','Ascendente':'Ascendant','Inmortal':'Immortal','Radiante':'Radiant' };
-    RANKS.forEach(r => {
-      const apiName = ES_TO_API[r.name];
-      const tier = latestTiers.find(t => t.tierName?.toLowerCase().includes(apiName?.toLowerCase()) && t.tierName?.endsWith('3'))
-             || latestTiers.find(t => t.tierName?.toLowerCase().includes(apiName?.toLowerCase()));
-      if (tier?.largeIcon) rankIcons[r.name] = tier.largeIcon;
-    });
+        // Pick the latest tier set and map rank icons
+        const tierSets = tiersData.data || [];
+        const latestTiers = tierSets[tierSets.length - 1]?.tiers || [];
+        const RANK_API_NAMES = ['Iron', 'Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Ascendant', 'Immortal', 'Radiant'];
+        const ES_TO_API = { 'Hierro': 'Iron', 'Bronce': 'Bronze', 'Plata': 'Silver', 'Oro': 'Gold', 'Platino': 'Platinum', 'Diamante': 'Diamond', 'Ascendente': 'Ascendant', 'Inmortal': 'Immortal', 'Radiante': 'Radiant' };
+        RANKS.forEach(r => {
+          const apiName = ES_TO_API[r.name];
+          const tier = latestTiers.find(t => t.tierName?.toLowerCase().includes(apiName?.toLowerCase()) && t.tierName?.endsWith('3'))
+            || latestTiers.find(t => t.tierName?.toLowerCase().includes(apiName?.toLowerCase()));
+          if (tier?.largeIcon) rankIcons[r.name] = tier.largeIcon;
+        });
 
-    questionPool = [
-      ...genRoleQuestions(agents), ...genAbilityQuestions(agents),
-      ...genOriginQuestions(agents), ...genPriceQuestions(weapons),
-      ...genWeaponTypeQuestions(weapons), ...genMapQuestions(maps),
-      ...STATIC_QUESTIONS,
+        questionPool = [
+          ...genRoleQuestions(agents), ...genAbilityQuestions(agents),
+          ...genOriginQuestions(agents), ...genPriceQuestions(weapons),
+          ...genWeaponTypeQuestions(weapons), ...genMapQuestions(maps),
+          ...STATIC_QUESTIONS,
+        ];
+
+        setApiStatus('ok', `${questionPool.length} preguntas cargadas`);
+        document.getElementById('questions-count').textContent = `${questionPool.length} preguntas disponibles`;
+      } catch (e) {
+        console.error(e);
+        questionPool = [...STATIC_QUESTIONS];
+        document.getElementById('error-banner').classList.add('active');
+        setApiStatus('error', `Sin conexión — ${STATIC_QUESTIONS.length} preguntas de respaldo`);
+        document.getElementById('questions-count').textContent = `${STATIC_QUESTIONS.length} preguntas de respaldo`;
+      }
+
+      document.getElementById('screen-loading').classList.remove('active');
+      document.getElementById('tab-start').style.display = 'block';
+      const btn = document.getElementById('btn-start');
+      btn.disabled = false; btn.textContent = 'Plantar Spike';
+      renderLB();
+    }
+
+    function setApiStatus(s, label) {
+      document.getElementById('api-dot').className = 'api-dot' + (s === 'error' ? ' error' : s === 'loading' ? ' loading' : '');
+      document.getElementById('api-label').textContent = label;
+    }
+
+    // ---- QUESTION GENERATORS ----
+    function shuffle(arr) { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]]; } return a; }
+    function pick(arr, n) { return shuffle(arr).slice(0, n); }
+    function pickExcept(arr, ex, n) { return pick(arr.filter(x => x !== ex), n); }
+
+    function genRoleQuestions(agents) {
+      const roles = Object.values(ROLE_ES);
+      return agents.map(a => {
+        const roleEs = ROLE_ES[a.role?.displayName] || a.role?.displayName || '?';
+        return { cat: 'Agentes', q: `¿Cuál es el rol de ${a.displayName}?`, opts: shuffle([roleEs, ...pick(roles.filter(r => r !== roleEs), 3)]), ansVal: roleEs, portrait: null };
+      });
+    }
+
+    function genAbilityQuestions(agents) {
+      const qs = []; const names = agents.map(a => a.displayName);
+      agents.forEach(a => {
+        const ab = (a.abilities || []).filter(x => x.displayName && x.slot !== 'Passive' && x.slot !== 'Ultimate')[0];
+        if (!ab) return;
+        qs.push({ cat: 'Habilidades', q: `¿Qué agente usa la habilidad "${ab.displayName}"?`, opts: shuffle([a.displayName, ...pickExcept(names, a.displayName, 3)]), ansVal: a.displayName, portrait: null });
+      });
+      return qs;
+    }
+
+    function genOriginQuestions(agents) {
+      const withO = agents.filter(a => a.recruitmentData?.countryCode);
+      const all = [...new Set(withO.map(a => a.recruitmentData.countryCode))];
+      if (withO.length < 4) return [];
+      return withO.slice(0, 12).map(a => {
+        const c = a.recruitmentData.countryCode.toUpperCase();
+        const w = pickExcept(all, a.recruitmentData.countryCode, 3).map(x => x.toUpperCase());
+        return { cat: 'Agentes', q: `¿De qué país es ${a.displayName}? (código)`, opts: shuffle([c, ...w]), ansVal: c, portrait: null };
+      });
+    }
+
+    function genPriceQuestions(weapons) {
+      return weapons.map(w => {
+        const p = w.shopData.cost;
+        const o = [-400, -200, -100, 100, 200, 400, 600].filter(x => p + x > 0 && p + x !== p);
+        return { cat: 'Armas', q: `¿Cuánto cuesta el ${w.displayName}?`, opts: shuffle([String(p), ...pick(o, 3).map(x => String(p + x))]), ansVal: String(p), portrait: null };
+      });
+    }
+
+    function genWeaponTypeQuestions(weapons) {
+      const types = [...new Set(weapons.map(w => WTYPE_ES[w.category?.replace('EEquippableCategory::', '')] || w.category).filter(Boolean))];
+      return weapons.slice(0, 15).map(w => {
+        const t = WTYPE_ES[w.category?.replace('EEquippableCategory::', '') || ''] || w.category || '';
+        const wrong = pickExcept(types, t, 3);
+        if (wrong.length < 3) return null;
+        return { cat: 'Armas', q: `¿A qué categoría pertenece el ${w.displayName}?`, opts: shuffle([t, ...wrong]), ansVal: t, portrait: null };
+      }).filter(Boolean);
+    }
+
+    function genMapQuestions(maps) {
+      const names = maps.map(m => m.displayName); const qs = [];
+      maps.forEach(m => {
+        if (m.narrativeDescription) {
+          const w = pickExcept(names, m.displayName, 3);
+          qs.push({ cat: 'Mapas', q: `"${m.narrativeDescription.slice(0, 80)}…" ¿Qué mapa es?`, opts: shuffle([m.displayName, ...w]), ansVal: m.displayName, portrait: null });
+        }
+      });
+      return qs.slice(0, 12);
+    }
+
+    const STATIC_QUESTIONS = [
+      { cat: 'Agentes', q: '¿Cuántas clases de agentes existen en Valorant?', opts: ['3', '4', '5', '6'], ansVal: '4', portrait: null },
+      { cat: 'Mecánicas', q: '¿Cuántos HP tiene un jugador al inicio de la ronda?', opts: ['75', '100', '125', '150'], ansVal: '100', portrait: null },
+      { cat: 'Mecánicas', q: '¿Cuántos puntos de escudo otorga el escudo ligero?', opts: ['25', '50', '75', '100'], ansVal: '50', portrait: null },
+      { cat: 'Mecánicas', q: '¿Cuántas rondas necesita ganar un equipo (sin overtime)?', opts: ['10', '12', '13', '15'], ansVal: '13', portrait: null },
+      { cat: 'Mecánicas', q: '¿Cuántos segundos tiene la spike para detonar tras ser plantada?', opts: ['35', '40', '45', '50'], ansVal: '45', portrait: null },
+      { cat: 'Mecánicas', q: '¿Cuántos segundos dura la fase de compra?', opts: ['20', '30', '45', '60'], ansVal: '30', portrait: null },
+      { cat: 'Mapas', q: '¿En qué mapa hay teleportadores?', opts: ['Split', 'Haven', 'Bind', 'Fracture'], ansVal: 'Bind', portrait: null },
+      { cat: 'Mapas', q: '¿Cuántos sitios tiene el mapa Haven?', opts: ['1', '2', '3', '4'], ansVal: '3', portrait: null },
+      { cat: 'Esports', q: '¿Qué equipo ganó el primer VCT Champions (2021)?', opts: ['Sentinels', 'Acend', 'Fnatic', '100 Thieves'], ansVal: 'Acend', portrait: null },
+      { cat: 'Esports', q: '¿Qué organización es LOUD?', opts: ['Brasileña', 'Argentina', 'Colombiana', 'Mexicana'], ansVal: 'Brasileña', portrait: null },
+      { cat: 'Lore', q: '¿Qué organización es la principal antagonista en el lore?', opts: ['VALORANT Protocol', 'Kingdom Corporation', 'Mirror Earth', 'The Array'], ansVal: 'Kingdom Corporation', portrait: null },
+      { cat: 'Lore', q: '¿Cómo se llama el evento misterioso que inicia el lore?', opts: ['First Light', 'The Incident', 'Radiante Event', 'Kingdom Day'], ansVal: 'First Light', portrait: null },
     ];
 
-    setApiStatus('ok', `${questionPool.length} preguntas cargadas`);
-    document.getElementById('questions-count').textContent = `${questionPool.length} preguntas disponibles`;
-  } catch(e) {
-    console.error(e);
-    questionPool = [...STATIC_QUESTIONS];
-    document.getElementById('error-banner').classList.add('active');
-    setApiStatus('error', `Sin conexión — ${STATIC_QUESTIONS.length} preguntas de respaldo`);
-    document.getElementById('questions-count').textContent = `${STATIC_QUESTIONS.length} preguntas de respaldo`;
-  }
+    // ---- GAME STATE ----
+    let state = { diff: 'medium', questions: [], current: 0, correct: 0, wrong: 0, timeLeft: 60, totalTime: 60, needed: 8, timer: null, answered: false, startTime: 0, score: 0, tag: '' };
 
-  document.getElementById('screen-loading').classList.remove('active');
-  document.getElementById('tab-start').style.display = 'block';
-  const btn = document.getElementById('btn-start');
-  btn.disabled = false; btn.textContent = 'Plantar Spike';
-  renderLB();
-}
+    document.querySelectorAll('.diff-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active'); state.diff = btn.dataset.diff;
+      });
+    });
 
-function setApiStatus(s, label) {
-  document.getElementById('api-dot').className = 'api-dot' + (s==='error' ? ' error' : s==='loading' ? ' loading' : '');
-  document.getElementById('api-label').textContent = label;
-}
-
-// ---- QUESTION GENERATORS ----
-function shuffle(arr) { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
-function pick(arr,n){return shuffle(arr).slice(0,n);}
-function pickExcept(arr,ex,n){return pick(arr.filter(x=>x!==ex),n);}
-
-function genRoleQuestions(agents) {
-  const roles = Object.values(ROLE_ES);
-  return agents.map(a => {
-    const roleEs = ROLE_ES[a.role?.displayName] || a.role?.displayName || '?';
-    return { cat:'Agentes', q:`¿Cuál es el rol de ${a.displayName}?`, opts:shuffle([roleEs,...pick(roles.filter(r=>r!==roleEs),3)]), ansVal:roleEs, portrait:null };
-  });
-}
-
-function genAbilityQuestions(agents) {
-  const qs = []; const names = agents.map(a=>a.displayName);
-  agents.forEach(a => {
-    const ab = (a.abilities||[]).filter(x=>x.displayName&&x.slot!=='Passive'&&x.slot!=='Ultimate')[0];
-    if (!ab) return;
-    qs.push({ cat:'Habilidades', q:`¿Qué agente usa la habilidad "${ab.displayName}"?`, opts:shuffle([a.displayName,...pickExcept(names,a.displayName,3)]), ansVal:a.displayName, portrait:null });
-  });
-  return qs;
-}
-
-function genOriginQuestions(agents) {
-  const withO = agents.filter(a=>a.recruitmentData?.countryCode);
-  const all = [...new Set(withO.map(a=>a.recruitmentData.countryCode))];
-  if (withO.length < 4) return [];
-  return withO.slice(0,12).map(a => {
-    const c = a.recruitmentData.countryCode.toUpperCase();
-    const w = pickExcept(all, a.recruitmentData.countryCode, 3).map(x=>x.toUpperCase());
-    return { cat:'Agentes', q:`¿De qué país es ${a.displayName}? (código)`, opts:shuffle([c,...w]), ansVal:c, portrait:null };
-  });
-}
-
-function genPriceQuestions(weapons) {
-  return weapons.map(w => {
-    const p = w.shopData.cost;
-    const o = [-400,-200,-100,100,200,400,600].filter(x=>p+x>0&&p+x!==p);
-    return { cat:'Armas', q:`¿Cuánto cuesta el ${w.displayName}?`, opts:shuffle([String(p),...pick(o,3).map(x=>String(p+x))]), ansVal:String(p), portrait:null };
-  });
-}
-
-function genWeaponTypeQuestions(weapons) {
-  const types = [...new Set(weapons.map(w=>WTYPE_ES[w.category?.replace('EEquippableCategory::','')]||w.category).filter(Boolean))];
-  return weapons.slice(0,15).map(w=>{
-    const t = WTYPE_ES[w.category?.replace('EEquippableCategory::','')||'']||w.category||'';
-    const wrong = pickExcept(types,t,3);
-    if(wrong.length<3) return null;
-    return { cat:'Armas', q:`¿A qué categoría pertenece el ${w.displayName}?`, opts:shuffle([t,...wrong]), ansVal:t, portrait:null };
-  }).filter(Boolean);
-}
-
-function genMapQuestions(maps) {
-  const names = maps.map(m=>m.displayName); const qs=[];
-  maps.forEach(m=>{
-    if(m.narrativeDescription){
-      const w=pickExcept(names,m.displayName,3);
-      qs.push({cat:'Mapas',q:`"${m.narrativeDescription.slice(0,80)}…" ¿Qué mapa es?`,opts:shuffle([m.displayName,...w]),ansVal:m.displayName,portrait:null});
+    function showTab(name) {
+      document.getElementById('tab-start').style.display = name === 'start' ? 'block' : 'none';
+      document.getElementById('tab-leaderboard').style.display = name === 'leaderboard' ? 'block' : 'none';
+      document.querySelectorAll('.nav-tab').forEach((t, i) => t.classList.toggle('active', (i === 0 && name === 'start') || (i === 1 && name === 'leaderboard')));
+      if (name === 'leaderboard') renderLB();
     }
-  });
-  return qs.slice(0,12);
-}
 
-const STATIC_QUESTIONS = [
-  {cat:'Agentes',q:'¿Cuántas clases de agentes existen en Valorant?',opts:['3','4','5','6'],ansVal:'4',portrait:null},
-  {cat:'Mecánicas',q:'¿Cuántos HP tiene un jugador al inicio de la ronda?',opts:['75','100','125','150'],ansVal:'100',portrait:null},
-  {cat:'Mecánicas',q:'¿Cuántos puntos de escudo otorga el escudo ligero?',opts:['25','50','75','100'],ansVal:'50',portrait:null},
-  {cat:'Mecánicas',q:'¿Cuántas rondas necesita ganar un equipo (sin overtime)?',opts:['10','12','13','15'],ansVal:'13',portrait:null},
-  {cat:'Mecánicas',q:'¿Cuántos segundos tiene la spike para detonar tras ser plantada?',opts:['35','40','45','50'],ansVal:'45',portrait:null},
-  {cat:'Mecánicas',q:'¿Cuántos segundos dura la fase de compra?',opts:['20','30','45','60'],ansVal:'30',portrait:null},
-  {cat:'Mapas',q:'¿En qué mapa hay teleportadores?',opts:['Split','Haven','Bind','Fracture'],ansVal:'Bind',portrait:null},
-  {cat:'Mapas',q:'¿Cuántos sitios tiene el mapa Haven?',opts:['1','2','3','4'],ansVal:'3',portrait:null},
-  {cat:'Esports',q:'¿Qué equipo ganó el primer VCT Champions (2021)?',opts:['Sentinels','Acend','Fnatic','100 Thieves'],ansVal:'Acend',portrait:null},
-  {cat:'Esports',q:'¿Qué organización es LOUD?',opts:['Brasileña','Argentina','Colombiana','Mexicana'],ansVal:'Brasileña',portrait:null},
-  {cat:'Lore',q:'¿Qué organización es la principal antagonista en el lore?',opts:['VALORANT Protocol','Kingdom Corporation','Mirror Earth','The Array'],ansVal:'Kingdom Corporation',portrait:null},
-  {cat:'Lore',q:'¿Cómo se llama el evento misterioso que inicia el lore?',opts:['First Light','The Incident','Radiante Event','Kingdom Day'],ansVal:'First Light',portrait:null},
-];
+    function startGame() {
+      const tagInput = document.getElementById('player-tag').value.trim();
+      if (!tagInput) { document.getElementById('player-tag').focus(); document.getElementById('player-tag').style.borderColor = 'var(--red)'; return; }
+      document.getElementById('player-tag').style.borderColor = '';
 
-// ---- GAME STATE ----
-let state = { diff:'medium', questions:[], current:0, correct:0, wrong:0, timeLeft:60, totalTime:60, needed:8, timer:null, answered:false, startTime:0, score:0, tag:'' };
+      const cfg = DIFF[state.diff];
+      state.tag = tagInput;
+      state.timeLeft = cfg.time; state.totalTime = cfg.time; state.needed = cfg.needed;
+      state.correct = 0; state.wrong = 0; state.current = 0; state.score = 0;
+      state.startTime = Date.now();
+      state.questions = shuffle(questionPool).slice(0, Math.min(cfg.needed + 10, questionPool.length));
 
-document.querySelectorAll('.diff-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.diff-btn').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active'); state.diff = btn.dataset.diff;
-  });
-});
+      document.getElementById('main-nav').style.display = 'none';
+      document.getElementById('tab-start').style.display = 'none';
+      document.getElementById('game-area').classList.add('active');
 
-function showTab(name) {
-  document.getElementById('tab-start').style.display = name==='start' ? 'block' : 'none';
-  document.getElementById('tab-leaderboard').style.display = name==='leaderboard' ? 'block' : 'none';
-  document.querySelectorAll('.nav-tab').forEach((t,i)=>t.classList.toggle('active', (i===0&&name==='start')||(i===1&&name==='leaderboard')));
-  if (name==='leaderboard') renderLB();
-}
+      buildDots(); renderQuestion(); startTimer();
+    }
 
-function startGame() {
-  const tagInput = document.getElementById('player-tag').value.trim();
-  if (!tagInput) { document.getElementById('player-tag').focus(); document.getElementById('player-tag').style.borderColor='var(--red)'; return; }
-  document.getElementById('player-tag').style.borderColor='';
+    function buildDots() {
+      const c = document.getElementById('dots'); c.innerHTML = '';
+      for (let i = 0; i < state.needed; i++) { const d = document.createElement('div'); d.className = 'dot' + (i === 0 ? ' current' : ''); d.id = 'dot-' + i; c.appendChild(d); }
+    }
 
-  const cfg = DIFF[state.diff];
-  state.tag = tagInput;
-  state.timeLeft = cfg.time; state.totalTime = cfg.time; state.needed = cfg.needed;
-  state.correct = 0; state.wrong = 0; state.current = 0; state.score = 0;
-  state.startTime = Date.now();
-  state.questions = shuffle(questionPool).slice(0, Math.min(cfg.needed+10, questionPool.length));
+    function renderQuestion() {
+      if (state.current >= state.questions.length) { state.questions = [...state.questions, ...shuffle(questionPool).slice(0, 5)]; }
+      const q = state.questions[state.current];
+      state.answered = false;
+      document.getElementById('q-category').textContent = q.cat;
+      document.getElementById('q-text').textContent = q.q;
+      document.getElementById('round-badge').textContent = `Pregunta ${state.correct + 1} / ${state.needed}`;
+      document.getElementById('feedback').textContent = ''; document.getElementById('feedback').className = 'feedback';
+      const p = document.getElementById('agent-portrait');
+      if (q.portrait) { p.src = q.portrait; p.className = 'agent-portrait visible'; } else { p.className = 'agent-portrait'; }
+      const keys = ['A', 'B', 'C', 'D']; const box = document.getElementById('options'); box.innerHTML = '';
+      q.opts.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn'; btn.dataset.correct = (opt === q.ansVal);
+        btn.innerHTML = `<span class="option-key">${keys[idx]}</span>${opt}`;
+        btn.addEventListener('click', () => handleAnswer(btn)); box.appendChild(btn);
+      });
+    }
 
-  document.getElementById('main-nav').style.display = 'none';
-  document.getElementById('tab-start').style.display = 'none';
-  document.getElementById('game-area').classList.add('active');
+    function handleAnswer(btn) {
+      if (state.answered) return; state.answered = true;
+      const correct = btn.dataset.correct === 'true';
+      document.querySelectorAll('.option-btn').forEach(b => { b.disabled = true; if (b.dataset.correct === 'true') b.classList.add('correct'); });
+      const fb = document.getElementById('feedback');
+      if (correct) {
+        btn.classList.add('correct'); state.correct++;
+        const cfg = DIFF[state.diff];
+        const pts = Math.round(PTS_PER_CORRECT * cfg.mult);
+        state.score += pts;
+        fb.textContent = `¡Correcto! +${pts} pts`; fb.className = 'feedback correct';
+        document.getElementById('score-live').textContent = state.score.toLocaleString() + ' pts';
+        const dot = document.getElementById('dot-' + (state.correct - 1));
+        if (dot) { dot.classList.remove('current'); dot.classList.add('correct'); }
+        if (state.correct >= state.needed) { setTimeout(winGame, 700); return; }
+      } else {
+        btn.classList.add('wrong'); state.wrong++;
+        fb.textContent = 'Incorrecto.'; fb.className = 'feedback wrong';
+      }
+      const next = document.getElementById('dot-' + state.correct);
+      if (next) next.classList.add('current');
+      state.current++; setTimeout(renderQuestion, 1100);
+    }
 
-  buildDots(); renderQuestion(); startTimer();
-}
+    function startTimer() {
+      clearInterval(state.timer); updateTimerUI();
+      state.timer = setInterval(() => { state.timeLeft--; updateTimerUI(); if (state.timeLeft <= 0) { clearInterval(state.timer); loseGame(); } }, 1000);
+    }
 
-function buildDots() {
-  const c = document.getElementById('dots'); c.innerHTML='';
-  for(let i=0;i<state.needed;i++){const d=document.createElement('div');d.className='dot'+(i===0?' current':'');d.id='dot-'+i;c.appendChild(d);}
-}
+    function updateTimerUI() {
+      const pct = (state.timeLeft / state.totalTime) * 100;
+      document.getElementById('timer-fill').style.width = pct + '%';
+      document.getElementById('timer-display').textContent = state.timeLeft;
+      const color = pct > 50 ? 'var(--red)' : pct > 25 ? '#ff8c00' : '#ff2200';
+      document.getElementById('timer-fill').style.background = color;
+      document.getElementById('timer-display').style.color = color;
+    }
 
-function renderQuestion() {
-  if(state.current>=state.questions.length){state.questions=[...state.questions,...shuffle(questionPool).slice(0,5)];}
-  const q = state.questions[state.current];
-  state.answered = false;
-  document.getElementById('q-category').textContent = q.cat;
-  document.getElementById('q-text').textContent = q.q;
-  document.getElementById('round-badge').textContent = `Pregunta ${state.correct+1} / ${state.needed}`;
-  document.getElementById('feedback').textContent=''; document.getElementById('feedback').className='feedback';
-  const p = document.getElementById('agent-portrait');
-  if(q.portrait){p.src=q.portrait;p.className='agent-portrait visible';}else{p.className='agent-portrait';}
-  const keys=['A','B','C','D']; const box=document.getElementById('options'); box.innerHTML='';
-  q.opts.forEach((opt,idx)=>{
-    const btn=document.createElement('button');
-    btn.className='option-btn'; btn.dataset.correct=(opt===q.ansVal);
-    btn.innerHTML=`<span class="option-key">${keys[idx]}</span>${opt}`;
-    btn.addEventListener('click',()=>handleAnswer(btn)); box.appendChild(btn);
-  });
-}
+    function calcTimeBonus() {
+      return Math.round(state.timeLeft * PTS_PER_SEC * DIFF[state.diff].mult);
+    }
 
-function handleAnswer(btn) {
-  if(state.answered) return; state.answered=true;
-  const correct=btn.dataset.correct==='true';
-  document.querySelectorAll('.option-btn').forEach(b=>{b.disabled=true;if(b.dataset.correct==='true')b.classList.add('correct');});
-  const fb=document.getElementById('feedback');
-  if(correct){
-    btn.classList.add('correct'); state.correct++;
-    const cfg=DIFF[state.diff];
-    const pts=Math.round(PTS_PER_CORRECT*cfg.mult);
-    state.score+=pts;
-    fb.textContent=`¡Correcto! +${pts} pts`; fb.className='feedback correct';
-    document.getElementById('score-live').textContent=state.score.toLocaleString()+' pts';
-    const dot=document.getElementById('dot-'+(state.correct-1));
-    if(dot){dot.classList.remove('current');dot.classList.add('correct');}
-    if(state.correct>=state.needed){setTimeout(winGame,700);return;}
-  } else {
-    btn.classList.add('wrong'); state.wrong++;
-    fb.textContent='Incorrecto.'; fb.className='feedback wrong';
-  }
-  const next=document.getElementById('dot-'+state.correct);
-  if(next) next.classList.add('current');
-  state.current++; setTimeout(renderQuestion,1100);
-}
-
-function startTimer() {
-  clearInterval(state.timer); updateTimerUI();
-  state.timer=setInterval(()=>{ state.timeLeft--; updateTimerUI(); if(state.timeLeft<=0){clearInterval(state.timer);loseGame();}},1000);
-}
-
-function updateTimerUI() {
-  const pct=(state.timeLeft/state.totalTime)*100;
-  document.getElementById('timer-fill').style.width=pct+'%';
-  document.getElementById('timer-display').textContent=state.timeLeft;
-  const color=pct>50?'var(--red)':pct>25?'#ff8c00':'#ff2200';
-  document.getElementById('timer-fill').style.background=color;
-  document.getElementById('timer-display').style.color=color;
-}
-
-function calcTimeBonus() {
-  return Math.round(state.timeLeft * PTS_PER_SEC * DIFF[state.diff].mult);
-}
-
-function rankCardHTML(totalPts, gained) {
-  const rank = getRank(totalPts);
-  const next = getNextRank(totalPts);
-  const pct = rankProgress(totalPts);
-  const icon = rankIcons[rank.name] ? `<img src="${rankIcons[rank.name]}" alt="${rank.name}" style="width:60px;height:60px;object-fit:contain">` : '';
-  const nextTxt = next ? `${totalPts.toLocaleString()} / ${next.min.toLocaleString()} pts para ${next.name}` : '¡Rango máximo!';
-  return `${icon}<div class="rank-name" style="color:${rank.color}">${rank.name}</div>
+    function rankCardHTML(totalPts, gained) {
+      const rank = getRank(totalPts);
+      const next = getNextRank(totalPts);
+      const pct = rankProgress(totalPts);
+      const icon = rankIcons[rank.name] ? `<img src="${rankIcons[rank.name]}" alt="${rank.name}" style="width:60px;height:60px;object-fit:contain">` : '';
+      const nextTxt = next ? `${totalPts.toLocaleString()} / ${next.min.toLocaleString()} pts para ${next.name}` : '¡Rango máximo!';
+      return `${icon}<div class="rank-name" style="color:${rank.color}">${rank.name}</div>
     <div class="rank-pts">${nextTxt}</div>
     <div class="rank-progress-track" style="width:100%;margin-top:4px"><div class="rank-progress-fill" style="width:${pct}%;background:${rank.color}"></div></div>`;
-}
+    }
 
-function winGame() {
-  clearInterval(state.timer);
-  const timeBonus = calcTimeBonus();
-  const totalGained = state.score + timeBonus;
-  const prevPts = getPlayerPts(state.tag);
-  addScore(state.tag, totalGained);
-  const newTotal = prevPts + totalGained;
-  flash('defuse');
-  document.getElementById('game-area').classList.remove('active');
-  document.getElementById('win-sub').textContent = `Desactivaste la spike con ${state.timeLeft}s restantes, ${state.tag}.`;
-  document.getElementById('win-points').innerHTML = `<div><div class="points-big">+${totalGained.toLocaleString()}</div><div class="points-label">puntos ganados</div></div><div style="font-size:0.8rem;color:var(--muted);text-align:right"><div>${state.score.toLocaleString()} base</div><div>+${timeBonus.toLocaleString()} bonus tiempo</div></div>`;
-  document.getElementById('win-rank').innerHTML = rankCardHTML(newTotal, totalGained);
-  document.getElementById('win-stats').innerHTML = statCards([[state.correct,'var(--green)','Correctas'],[state.wrong,'var(--red)','Falladas'],[state.timeLeft+'s','var(--text)','Tiempo extra']]);
-  document.getElementById('screen-win').classList.add('active');
-}
+    function winGame() {
+      clearInterval(state.timer);
+      const timeBonus = calcTimeBonus();
+      const totalGained = state.score + timeBonus;
+      const prevPts = getPlayerPts(state.tag);
+      addScore(state.tag, totalGained);
+      const newTotal = prevPts + totalGained;
+      flash('defuse');
+      document.getElementById('game-area').classList.remove('active');
+      document.getElementById('win-sub').textContent = `Desactivaste la spike con ${state.timeLeft}s restantes, ${state.tag}.`;
+      document.getElementById('win-points').innerHTML = `<div><div class="points-big">+${totalGained.toLocaleString()}</div><div class="points-label">puntos ganados</div></div><div style="font-size:0.8rem;color:var(--muted);text-align:right"><div>${state.score.toLocaleString()} base</div><div>+${timeBonus.toLocaleString()} bonus tiempo</div></div>`;
+      document.getElementById('win-rank').innerHTML = rankCardHTML(newTotal, totalGained);
+      document.getElementById('win-stats').innerHTML = statCards([[state.correct, 'var(--green)', 'Correctas'], [state.wrong, 'var(--red)', 'Falladas'], [state.timeLeft + 's', 'var(--text)', 'Tiempo extra']]);
+      document.getElementById('screen-win').classList.add('active');
+    }
 
-function loseGame() {
-  const totalGained = Math.round(state.score * 0.5);
-  const prevPts = getPlayerPts(state.tag);
-  if(totalGained > 0) addScore(state.tag, totalGained);
-  const newTotal = prevPts + totalGained;
-  flash('explosion');
-  document.getElementById('game-area').classList.remove('active');
-  const acc=(state.correct+state.wrong)>0?Math.round(state.correct/(state.correct+state.wrong)*100):0;
-  document.getElementById('lose-sub').textContent = `Tiempo agotado. Solo ${state.correct} de ${state.needed} preguntas, ${state.tag}.`;
-  document.getElementById('lose-points').innerHTML = totalGained>0 ? `<div><div class="points-big">+${totalGained.toLocaleString()}</div><div class="points-label">puntos (50% por derrota)</div></div>` : `<div style="color:var(--muted);font-size:0.9rem">Sin puntos — responde al menos una correcta</div>`;
-  document.getElementById('lose-rank').innerHTML = rankCardHTML(newTotal, totalGained);
-  document.getElementById('lose-stats').innerHTML = statCards([[state.correct,'var(--green)','Correctas'],[state.needed-state.correct,'var(--red)','Faltaron'],[acc+'%','var(--text)','Precisión']]);
-  document.getElementById('screen-lose').classList.add('active');
-}
+    function loseGame() {
+      const totalGained = Math.round(state.score * 0.5);
+      const prevPts = getPlayerPts(state.tag);
+      if (totalGained > 0) addScore(state.tag, totalGained);
+      const newTotal = prevPts + totalGained;
+      flash('explosion');
+      document.getElementById('game-area').classList.remove('active');
+      const acc = (state.correct + state.wrong) > 0 ? Math.round(state.correct / (state.correct + state.wrong) * 100) : 0;
+      document.getElementById('lose-sub').textContent = `Tiempo agotado. Solo ${state.correct} de ${state.needed} preguntas, ${state.tag}.`;
+      document.getElementById('lose-points').innerHTML = totalGained > 0 ? `<div><div class="points-big">+${totalGained.toLocaleString()}</div><div class="points-label">puntos (50% por derrota)</div></div>` : `<div style="color:var(--muted);font-size:0.9rem">Sin puntos — responde al menos una correcta</div>`;
+      document.getElementById('lose-rank').innerHTML = rankCardHTML(newTotal, totalGained);
+      document.getElementById('lose-stats').innerHTML = statCards([[state.correct, 'var(--green)', 'Correctas'], [state.needed - state.correct, 'var(--red)', 'Faltaron'], [acc + '%', 'var(--text)', 'Precisión']]);
+      document.getElementById('screen-lose').classList.add('active');
+    }
 
-function statCards(rows) {
-  return rows.map(([v,c,l])=>`<div class="stat-card"><div class="stat-val" style="color:${c}">${v}</div><div class="stat-lbl">${l}</div></div>`).join('');
-}
+    function statCards(rows) {
+      return rows.map(([v, c, l]) => `<div class="stat-card"><div class="stat-val" style="color:${c}">${v}</div><div class="stat-lbl">${l}</div></div>`).join('');
+    }
 
-function flash(id) {
-  const el=document.getElementById(id); el.classList.remove('active'); void el.offsetWidth; el.classList.add('active');
-  setTimeout(()=>el.classList.remove('active'),1000);
-}
+    function flash(id) {
+      const el = document.getElementById(id); el.classList.remove('active'); void el.offsetWidth; el.classList.add('active');
+      setTimeout(() => el.classList.remove('active'), 1000);
+    }
 
-function goHome() {
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById('game-area').classList.remove('active');
-  document.getElementById('main-nav').style.display='flex';
-  showTab('start');
-}
+    function goHome() {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('game-area').classList.remove('active');
+      document.getElementById('main-nav').style.display = 'flex';
+      showTab('start');
+    }
 
-// ---- INIT ----
-showTab('start');
-loadData();
-</script>
+    // ---- INIT ----
+    showTab('start');
+    loadData();
+  </script>
 </body>
+
 </html>
