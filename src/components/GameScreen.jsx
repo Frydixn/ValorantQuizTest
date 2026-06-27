@@ -22,8 +22,9 @@ export default function GameScreen({
 
   const keys = ['A', 'B', 'C', 'D'];
 
-  // Render dots progress
-  const dots = dotStates.map((status, i) => (
+  // Render dots progress (sliding window of the last 10 attempts)
+  const visibleDotStates = dotStates.slice(-10);
+  const dots = visibleDotStates.map((status, i) => (
     <div key={i} className={`dot ${status}`}></div>
   ));
 
@@ -63,7 +64,7 @@ export default function GameScreen({
       {/* Live round & score */}
       <div className="game-meta">
         <div className="round-badge">
-          Pregunta {currentQuestionIndex + 1} / {needed}
+          Pregunta {currentQuestionIndex + 1}
         </div>
         <div className="score-live">{score.toLocaleString()} pts</div>
       </div>

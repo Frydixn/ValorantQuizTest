@@ -29,46 +29,30 @@ export default function ResultScreen({
 
   return (
     <div className="screen">
-      <div className="screen-icon">{isWin ? '✅' : '💥'}</div>
+      <div className="screen-icon">💥</div>
       
       <div 
         className="screen-title" 
-        style={{ color: isWin ? 'var(--green)' : 'var(--red)' }}
+        style={{ color: 'var(--red)' }}
       >
-        {isWin ? 'Spike desactivada' : 'Spike detonada'}
+        Spike detonada
       </div>
 
       <div className="screen-sub">
-        {isWin 
-          ? `Desactivaste la spike con ${timeLeft}s restantes, ${playerTag}.`
-          : `Tiempo agotado. Solo ${correctCount} de ${needed} preguntas, ${playerTag}.`
-        }
+        ¡Tiempo agotado! Respondiste {correctCount} de {correctCount + wrongCount} preguntas correctamente, {playerTag}.
       </div>
 
       {/* Points Banner */}
       <div className="points-banner">
-        {isWin ? (
-          <>
-            <div>
-              <div className="points-big">+{totalGained.toLocaleString()}</div>
-              <div className="points-label">puntos ganados</div>
-            </div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--muted)', textAlign: 'right' }}>
-              <div>{basePoints.toLocaleString()} base</div>
-              <div>+{timeBonus.toLocaleString()} bonus tiempo</div>
-            </div>
-          </>
+        {totalGained > 0 ? (
+          <div>
+            <div className="points-big">+{totalGained.toLocaleString()}</div>
+            <div className="points-label">puntos ganados</div>
+          </div>
         ) : (
-          totalGained > 0 ? (
-            <div>
-              <div className="points-big">+{totalGained.toLocaleString()}</div>
-              <div className="points-label">puntos (50% por derrota)</div>
-            </div>
-          ) : (
-            <div style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>
-              Sin puntos — responde al menos una correcta
-            </div>
-          )
+          <div style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>
+            Sin puntos — responde al menos una correcta
+          </div>
         )}
       </div>
 
@@ -111,25 +95,24 @@ export default function ResultScreen({
 
         <div className="stat-card">
           <div className="stat-val" style={{ color: 'var(--red)' }}>
-            {isWin ? wrongCount : needed - correctCount}
+            {wrongCount}
           </div>
-          <div className="stat-lbl">{isWin ? 'Falladas' : 'Faltaron'}</div>
+          <div className="stat-lbl">Falladas</div>
         </div>
 
         <div className="stat-card">
           <div className="stat-val" style={{ color: 'var(--text)' }}>
-            {isWin ? `${timeLeft}s` : `${accuracy}%`}
+            {accuracy}%
           </div>
-          <div className="stat-lbl">{isWin ? 'Tiempo extra' : 'Precisión'}</div>
+          <div className="stat-lbl">Precisión</div>
         </div>
       </div>
 
       <button 
         className="btn-primary" 
-        style={isWin ? { background: 'var(--green)', boxShadow: '0 0 20px var(--green-glow)' } : {}}
         onClick={onRetry}
       >
-        {isWin ? 'Nueva ronda' : 'Reintentar'}
+        Nueva ronda
       </button>
 
       <button className="btn-link" onClick={onViewLeaderboard}>

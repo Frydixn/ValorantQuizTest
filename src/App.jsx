@@ -147,13 +147,10 @@ export default function App() {
     setSelectedOption(null);
     setFeedback({ text: '', type: '' });
 
-    const initialDots = Array(cfg.needed).fill('');
-    initialDots[0] = 'current';
-    setDotStates(initialDots);
+    setDotStates(['current']);
 
     const shuffled = shuffle(questionPool);
-    const selected = shuffled.slice(0, Math.min(cfg.needed + 10, questionPool.length));
-    setGameQuestions(selected);
+    setGameQuestions(shuffled);
   };
 
   const handleAnswer = (opt) => {
@@ -200,25 +197,14 @@ export default function App() {
       });
     }
 
-    const isLastQuestion = currentQuestionIndex + 1 >= cfg.needed;
-
-    if (!isLastQuestion) {
-      nextDotStates[currentQuestionIndex + 1] = 'current';
-    }
+    nextDotStates[currentQuestionIndex + 1] = 'current';
     setDotStates(nextDotStates);
 
-    if (isLastQuestion) {
-      setTimeout(() => {
-        handleWinGame(newCorrect, newScore);
-      }, 1100);
-      return;
-    }
-
-    // Move to next question after delay
+    // Move to next question after delay (indefinitely until timer runs out)
     setTimeout(() => {
       let nextIndex = currentQuestionIndex + 1;
       if (nextIndex >= gameQuestions.length) {
-        const extra = shuffle(questionPool).slice(0, 5);
+        const extra = shuffle(questionPool).slice(0, 10);
         setGameQuestions((prev) => [...prev, ...extra]);
       }
       setCurrentQuestionIndex(nextIndex);
@@ -252,7 +238,7 @@ export default function App() {
   };
 
   const handleLoseGame = async () => {
-    const totalGainedVal = Math.round(score * 0.5);
+    const totalGainedVal = score; // 100% score for endless/time-attack mode
     const prevPts = await getPlayerPts(playerTag);
 
     let updatedLB = leaderboard;
