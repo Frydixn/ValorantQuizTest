@@ -499,7 +499,7 @@ function genRoleQuestions(agents) {
   const roles = Object.values(ROLE_ES);
   return agents.map(a => {
     const roleEs = ROLE_ES[a.role?.displayName] || a.role?.displayName || '?';
-    return { cat:'Agentes', q:`¿Cuál es el rol de ${a.displayName}?`, opts:shuffle([roleEs,...pick(roles.filter(r=>r!==roleEs),3)]), ansVal:roleEs, portrait:a.displayIcon };
+    return { cat:'Agentes', q:`¿Cuál es el rol de ${a.displayName}?`, opts:shuffle([roleEs,...pick(roles.filter(r=>r!==roleEs),3)]), ansVal:roleEs, portrait:null };
   });
 }
 
@@ -508,7 +508,7 @@ function genAbilityQuestions(agents) {
   agents.forEach(a => {
     const ab = (a.abilities||[]).filter(x=>x.displayName&&x.slot!=='Passive'&&x.slot!=='Ultimate')[0];
     if (!ab) return;
-    qs.push({ cat:'Habilidades', q:`¿Qué agente usa la habilidad "${ab.displayName}"?`, opts:shuffle([a.displayName,...pickExcept(names,a.displayName,3)]), ansVal:a.displayName, portrait:a.displayIcon });
+    qs.push({ cat:'Habilidades', q:`¿Qué agente usa la habilidad "${ab.displayName}"?`, opts:shuffle([a.displayName,...pickExcept(names,a.displayName,3)]), ansVal:a.displayName, portrait:null });
   });
   return qs;
 }
@@ -520,7 +520,7 @@ function genOriginQuestions(agents) {
   return withO.slice(0,12).map(a => {
     const c = a.recruitmentData.countryCode.toUpperCase();
     const w = pickExcept(all, a.recruitmentData.countryCode, 3).map(x=>x.toUpperCase());
-    return { cat:'Agentes', q:`¿De qué país es ${a.displayName}? (código)`, opts:shuffle([c,...w]), ansVal:c, portrait:a.displayIcon };
+    return { cat:'Agentes', q:`¿De qué país es ${a.displayName}? (código)`, opts:shuffle([c,...w]), ansVal:c, portrait:null };
   });
 }
 
@@ -538,20 +538,16 @@ function genWeaponTypeQuestions(weapons) {
     const t = WTYPE_ES[w.category?.replace('EEquippableCategory::','')||'']||w.category||'';
     const wrong = pickExcept(types,t,3);
     if(wrong.length<3) return null;
-    return { cat:'Armas', q:`¿A qué categoría pertenece el ${w.displayName}?`, opts:shuffle([t,...wrong]), ansVal:t, portrait:w.displayIcon };
+    return { cat:'Armas', q:`¿A qué categoría pertenece el ${w.displayName}?`, opts:shuffle([t,...wrong]), ansVal:t, portrait:null };
   }).filter(Boolean);
 }
 
 function genMapQuestions(maps) {
   const names = maps.map(m=>m.displayName); const qs=[];
   maps.forEach(m=>{
-    if(m.coordinates){
-      const w=pickExcept(maps.map(x=>x.coordinates).filter(Boolean),m.coordinates,3);
-      if(w.length>=3) qs.push({cat:'Mapas',q:`¿Cuáles son las coordenadas de ${m.displayName}?`,opts:shuffle([m.coordinates,...w]),ansVal:m.coordinates,portrait:m.listViewIcon});
-    }
     if(m.narrativeDescription){
       const w=pickExcept(names,m.displayName,3);
-      qs.push({cat:'Mapas',q:`"${m.narrativeDescription.slice(0,80)}…" ¿Qué mapa es?`,opts:shuffle([m.displayName,...w]),ansVal:m.displayName,portrait:m.listViewIcon});
+      qs.push({cat:'Mapas',q:`"${m.narrativeDescription.slice(0,80)}…" ¿Qué mapa es?`,opts:shuffle([m.displayName,...w]),ansVal:m.displayName,portrait:null});
     }
   });
   return qs.slice(0,12);
