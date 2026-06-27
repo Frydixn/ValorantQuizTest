@@ -30,10 +30,12 @@
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   .scanlines {
@@ -41,16 +43,21 @@
     background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
   }
 
-  #app { width: 100%; max-width: 700px; padding: 1.5rem; position: relative; z-index: 1; }
+  #app { width: 100%; max-width: 700px; padding: 1.25rem; position: relative; z-index: 1; }
 
-  .header { text-align: center; margin-bottom: 2rem; }
+  .header { text-align: center; margin-bottom: 1.5rem; }
   .logo {
-    font-family: 'Rajdhani', sans-serif; font-size: 2.8rem; font-weight: 700;
+    font-family: 'Rajdhani', sans-serif; font-size: 2.4rem; font-weight: 700;
     letter-spacing: 4px; color: var(--red); text-transform: uppercase;
     text-shadow: 0 0 20px var(--red-glow);
   }
   .logo span { color: var(--text); }
-  .subtitle { font-size: 0.85rem; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
+  .subtitle { font-size: 0.8rem; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
+
+  @media (min-width: 480px) {
+    body { align-items: center; }
+    .logo { font-size: 2.8rem; }
+  }
 
   /* LOADING */
   .loading-screen {
@@ -136,19 +143,28 @@
   .question-text { font-size: 1.1rem; line-height: 1.5; color: var(--text); font-weight: 500; }
 
   /* OPTIONS */
-  .options { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 1rem; }
+  .options { display: grid; grid-template-columns: 1fr; gap: 0.5rem; margin-bottom: 1rem; }
   .option-btn {
     background: var(--bg2); border: 1px solid var(--border); border-radius: 4px;
-    padding: 0.75rem 1rem; color: var(--text); cursor: pointer;
-    font-family: 'DM Sans', sans-serif; font-size: 0.95rem;
+    padding: 0.85rem 1rem; color: var(--text); cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-size: 1rem;
     text-align: left; transition: all 0.15s;
-    display: flex; align-items: center; gap: 0.6rem;
+    display: flex; align-items: center; gap: 0.75rem;
+    width: 100%; -webkit-tap-highlight-color: transparent;
   }
-  .option-key { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 0.8rem; color: var(--red); min-width: 18px; }
-  .option-btn:hover:not(:disabled) { border-color: var(--red); background: rgba(255,70,85,0.08); }
+  .option-key { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 0.85rem; color: var(--red); min-width: 20px; flex-shrink: 0; }
+  .option-btn:active:not(:disabled) { border-color: var(--red); background: rgba(255,70,85,0.08); }
+  @media (hover: hover) {
+    .option-btn:hover:not(:disabled) { border-color: var(--red); background: rgba(255,70,85,0.08); }
+  }
   .option-btn.correct { border-color: var(--green); background: rgba(60,191,110,0.12); color: var(--green); }
   .option-btn.wrong { border-color: var(--red); background: rgba(255,70,85,0.12); color: var(--red); }
   .option-btn:disabled { cursor: default; }
+
+  @media (min-width: 480px) {
+    .options { grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+    .option-btn { font-size: 0.95rem; padding: 0.75rem 1rem; }
+  }
 
   .feedback { text-align: center; font-size: 0.9rem; min-height: 1.5rem; color: var(--muted); padding: 0.5rem 0; }
   .feedback.correct { color: var(--green); }
@@ -184,23 +200,48 @@
   .defuse-overlay.active { display: block; animation: defuse-flash 0.8s ease-out forwards; }
   @keyframes defuse-flash { 0%{background:rgba(0,0,0,0)} 15%{background:rgba(60,191,110,0.5)} 100%{background:rgba(0,0,0,0)} }
 
-  .diff-grid { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; width: 100%; }
+  .diff-grid { display: flex; gap: 0.5rem; margin-bottom: 1.25rem; width: 100%; }
   .diff-btn {
-    flex: 1; padding: 0.75rem; border-radius: 4px; cursor: pointer;
+    flex: 1; padding: 0.6rem 0.4rem; border-radius: 4px; cursor: pointer;
     border: 1px solid var(--border); background: var(--bg2);
     color: var(--muted); font-family: 'Rajdhani', sans-serif;
-    font-size: 0.95rem; font-weight: 600; letter-spacing: 1px; transition: all 0.15s;
+    font-size: 0.9rem; font-weight: 600; letter-spacing: 1px; transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
   }
-  .diff-btn:hover, .diff-btn.active { border-color: var(--red); color: var(--text); }
-  .diff-btn .diff-icon { font-size: 1.4rem; display: block; margin-bottom: 4px; }
-  .diff-btn .diff-name { text-transform: uppercase; display: block; }
-  .diff-btn .diff-desc { font-size: 0.65rem; color: var(--muted); font-family: 'DM Sans', sans-serif; margin-top: 2px; display: block; }
+  .diff-btn:active, .diff-btn.active { border-color: var(--red); color: var(--text); }
+  .diff-btn .diff-icon { font-size: 1.2rem; display: block; margin-bottom: 3px; }
+  .diff-btn .diff-name { text-transform: uppercase; display: block; font-size: 0.85rem; }
+  .diff-btn .diff-desc { font-size: 0.6rem; color: var(--muted); font-family: 'DM Sans', sans-serif; margin-top: 2px; display: block; }
+
+  /* SPIKE BAR mobile */
+  .spike-bar { padding: 0.85rem 1rem; margin-bottom: 1rem; }
+  .spike-icon { font-size: 1.4rem; }
+  .timer-display { font-size: 1.7rem; min-width: 50px; }
+
+  /* QUESTION CARD mobile */
+  .question-card { padding: 1rem 1.1rem; margin-bottom: 1rem; }
+  .question-text { font-size: 1rem; }
+  .agent-portrait { width: 48px; height: 48px; }
+
+  /* PROGRESS mobile */
+  .progress-row { margin-bottom: 0.75rem; }
+  .dot { width: 9px; height: 9px; }
+
+  /* SCREENS mobile */
+  .screen { padding: 1.5rem 0.5rem; }
+  .screen-icon { font-size: 4rem; margin-bottom: 0.75rem; }
+  .screen-title { font-size: 2rem; }
+  .btn-primary { padding: 0.85rem 2rem; font-size: 1.05rem; width: 100%; max-width: 320px; }
+  .stat-grid { gap: 0.6rem; }
+  .stat-val { font-size: 1.5rem; }
 
   #game-area { display: none; }
   #game-area.active { display: block; }
-  .round-badge { font-family: 'Rajdhani', sans-serif; font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); text-align: right; margin-bottom: 0.5rem; }
+  .round-badge { font-family: 'Rajdhani', sans-serif; font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); text-align: right; margin-bottom: 0.4rem; }
 
   .questions-count { font-size: 0.75rem; color: var(--muted); margin-top: 0.25rem; }
+
+  .feedback { font-size: 0.95rem; padding: 0.4rem 0; min-height: 1.4rem; }
 </style>
 </head>
 <body>
