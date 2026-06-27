@@ -51,6 +51,7 @@ export default function App() {
   const [wrongCount, setWrongCount] = useState(0);
   const [timeLeft, setTimeLeft] = useState(60);
   const [score, setScore] = useState(0);
+  const [dotStates, setDotStates] = useState([]);
 
   // Interactive controls
   const [answered, setAnswered] = useState(false);
@@ -146,6 +147,10 @@ export default function App() {
     setSelectedOption(null);
     setFeedback({ text: '', type: '' });
 
+    const initialDots = Array(cfg.needed).fill('');
+    initialDots[0] = 'current';
+    setDotStates(initialDots);
+
     const shuffled = shuffle(questionPool);
     const selected = shuffled.slice(0, Math.min(cfg.needed + 10, questionPool.length));
     setGameQuestions(selected);
@@ -160,31 +165,53 @@ export default function App() {
     const isCorrect = opt === q.ansVal;
     const cfg = DIFF[difficulty];
 
+    let newScore = score;
+    let newCorrect = correctCount;
+    let newWrong = wrongCount;
+
+    const nextDotStates = [...dotStates];
+
     if (isCorrect) {
       const ptsGained = Math.round(PTS_PER_CORRECT * cfg.mult);
-      const newScore = score + ptsGained;
+      newScore = score + ptsGained;
       setScore(newScore);
 
-      const newCorrect = correctCount + 1;
+      newCorrect = correctCount + 1;
       setCorrectCount(newCorrect);
+
+      nextDotStates[currentQuestionIndex] = 'correct';
 
       setFeedback({
         text: `¡Correcto! +${ptsGained} pts`,
         type: 'correct',
       });
-
-      if (newCorrect >= cfg.needed) {
-        setTimeout(() => {
-          handleWinGame(newCorrect, newScore);
-        }, 700);
-        return;
-      }
     } else {
-      setWrongCount((w) => w + 1);
+      newWrong = wrongCount + 1;
+      setWrongCount(newWrong);
+
+      nextDotStates[currentQuestionIndex] = 'wrong';
+
+      // Deduct 2 seconds
+      setTimeLeft((t) => Math.max(0, t - 2));
+
       setFeedback({
-        text: 'Incorrecto.',
+        text: 'Incorrecto. -2s',
         type: 'wrong',
       });
+    }
+
+    const isLastQuestion = currentQuestionIndex + 1 >= cfg.needed;
+
+    if (!isLastQuestion) {
+      nextDotStates[currentQuestionIndex + 1] = 'current';
+    }
+    setDotStates(nextDotStates);
+
+    if (isLastQuestion) {
+      setTimeout(() => {
+        handleWinGame(newCorrect, newScore);
+      }, 1100);
+      return;
     }
 
     // Move to next question after delay
@@ -339,6 +366,8 @@ export default function App() {
             answered={answered}
             selectedOption={selectedOption}
             feedback={feedback}
+            dotStates={dotStates}
+            currentQuestionIndex={currentQuestionIndex}
           />
         )}
 

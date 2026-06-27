@@ -12,6 +12,8 @@ export default function GameScreen({
   answered,
   selectedOption,
   feedback,
+  dotStates = [],
+  currentQuestionIndex,
 }) {
   if (!currentQuestion) return null;
 
@@ -21,16 +23,9 @@ export default function GameScreen({
   const keys = ['A', 'B', 'C', 'D'];
 
   // Render dots progress
-  const dots = [];
-  for (let i = 0; i < needed; i++) {
-    let className = 'dot';
-    if (i < correctCount) {
-      className += ' correct';
-    } else if (i === correctCount) {
-      className += ' current';
-    }
-    dots.push(<div key={i} className={className}></div>);
-  }
+  const dots = dotStates.map((status, i) => (
+    <div key={i} className={`dot ${status}`}></div>
+  ));
 
   return (
     <div id="game-area" className="active">
@@ -68,7 +63,7 @@ export default function GameScreen({
       {/* Live round & score */}
       <div className="game-meta">
         <div className="round-badge">
-          Pregunta {correctCount + 1} / {needed}
+          Pregunta {currentQuestionIndex + 1} / {needed}
         </div>
         <div className="score-live">{score.toLocaleString()} pts</div>
       </div>
