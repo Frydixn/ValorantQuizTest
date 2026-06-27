@@ -67,7 +67,11 @@ export default function App() {
 
   // Load Initial API Data & Leaderboard
   useEffect(() => {
-    setLeaderboard(loadLB());
+    async function loadInitialLB() {
+      const lb = await loadLB();
+      setLeaderboard(lb);
+    }
+    loadInitialLB();
     
     async function loadData() {
       const data = await fetchValorantQuizData();
@@ -85,6 +89,17 @@ export default function App() {
     }
     loadData();
   }, []);
+
+  // Refresh Leaderboard on Tab Change
+  useEffect(() => {
+    if (activeTab === 'leaderboard') {
+      async function refreshLB() {
+        const lb = await loadLB();
+        setLeaderboard(lb);
+      }
+      refreshLB();
+    }
+  }, [activeTab]);
 
   // Timer Effect
   useEffect(() => {
@@ -186,13 +201,13 @@ export default function App() {
     }, 1100);
   };
 
-  const handleWinGame = (finalCorrect, finalScore) => {
+  const handleWinGame = async (finalCorrect, finalScore) => {
     const cfg = DIFF[difficulty];
     const timeBonusVal = Math.round(timeLeft * PTS_PER_SEC * cfg.mult);
     const totalGainedVal = finalScore + timeBonusVal;
 
-    const prevPts = getPlayerPts(playerTag);
-    const updatedLB = addScore(playerTag, totalGainedVal);
+    const prevPts = await getPlayerPts(playerTag);
+    const updatedLB = await addScore(playerTag, totalGainedVal);
     setLeaderboard(updatedLB);
 
     const newTotalVal = prevPts + totalGainedVal;
@@ -209,13 +224,13 @@ export default function App() {
     setGameOverStatus('win');
   };
 
-  const handleLoseGame = () => {
+  const handleLoseGame = async () => {
     const totalGainedVal = Math.round(score * 0.5);
-    const prevPts = getPlayerPts(playerTag);
+    const prevPts = await getPlayerPts(playerTag);
 
     let updatedLB = leaderboard;
     if (totalGainedVal > 0) {
-      updatedLB = addScore(playerTag, totalGainedVal);
+      updatedLB = await addScore(playerTag, totalGainedVal);
       setLeaderboard(updatedLB);
     }
     const newTotalVal = prevPts + totalGainedVal;
@@ -232,9 +247,9 @@ export default function App() {
     setGameOverStatus('lose');
   };
 
-  const handleClearLeaderboard = () => {
+  const handleClearLeaderboard = async () => {
     if (window.confirm('¿Borrar todo el ranking?')) {
-      const updated = clearLB();
+      const updated = await clearLB();
       setLeaderboard(updated);
     }
   };

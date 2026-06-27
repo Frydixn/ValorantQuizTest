@@ -1,37 +1,80 @@
-export function loadLB() {
+import { supabase } from './supabaseClient';
+
+export async function loadLB() {
   try {
-    return JSON.parse(localStorage.getItem('valoquiz_lb') || '[]');
-  } catch {
+    const { data, error } = await supabase
+      .from('leaderboard')
+      .select('*')
+      .order('pts', { ascending: false })
+      .limit(50);
+    if (error) throw error;
+    return data || [];
+  } catch (e) {
+    console.error('Error cargando ranking de Supabase:', e);
     return [];
   }
 }
 
-export function saveLB(lb) {
-  localStorage.setItem('valoquiz_lb', JSON.stringify(lb));
-}
+export async function addScore(tag, pts) {
+  try {
+    // Intentar buscar al jugador (case-insensitive)
+    const { data, error } = await supabase
+      .from('leaderboard')
+      .select('*')
+      .ilike('tag', tag);
+    if (error) throw error;
 
-export function addScore(tag, pts) {
-  const lb = loadLB();
-  const existing = lb.find(e => e.tag.toLowerCase() === tag.toLowerCase());
-  if (existing) {
-    existing.pts += pts;
-    existing.games = (existing.games || 1) + 1;
-  } else {
-    lb.push({ tag, pts, games: 1 });
+    if (data && data.length > 0) {
+      const existing = data[0];
+      const { error: updError } = await supabase
+        .from('leaderboard')
+        .update({
+          pts: existing.pts + pts,
+          games: (existing.games || 1) + 1,
+        })
+        .eq('id', existing.id);
+      if (updError) throw updError;
+    } else {
+      const { error: insError } = await supabase
+        .from('leaderboard')
+        .insert({
+          tag,
+          pts,
+          games: 1,
+        });
+      if (insError) throw insError;
+    }
+    return await loadLB();
+  } catch (e) {
+    console.error('Error guardando puntuación en Supabase:', e);
+    return await loadLB();
   }
-  lb.sort((a, b) => b.pts - a.pts);
-  const trimmed = lb.slice(0, 50);
-  saveLB(trimmed);
-  return trimmed;
 }
 
-export function getPlayerPts(tag) {
-  const lb = loadLB();
-  const e = lb.find(e => e.tag.toLowerCase() === tag.toLowerCase());
-  return e ? e.pts : 0;
+export async function getPlayerPts(tag) {
+  try {
+    const { data, error } = await supabase
+      .from('leaderboard')
+      .select('pts')
+      .ilike('tag', tag);
+    if (error) throw error;
+    return data && data.length > 0 ? data[0].pts : 0;
+  } catch (e) {
+    console.error('Error leyendo puntuación de Supabase:', e);
+    return 0;
+  }
 }
 
-export function clearLB() {
-  localStorage.removeItem('valoquiz_lb');
-  return [];
+export async function clearLB() {
+  try {
+    const { error } = await supabase
+      .from('leaderboard')
+      .delete()
+      .gte('pts', 0); // Borra todo registro con pts >= 0
+    if (error) throw error;
+    return [];
+  } catch (e) {
+    console.error('Error limpiando ranking en Supabase:', e);
+    return [];
+  }
 }
