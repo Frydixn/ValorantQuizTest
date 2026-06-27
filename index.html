@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ValoQuiz — Defuse the Spike</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --red: #ff4655;
+    --red-dark: #c1121f;
+    --red-glow: rgba(255, 70, 85, 0.35);
+    --gold: #e8c84a;
+    --bg: #0f1923;
+    --bg2: #1a2332;
+    --bg3: #243040;
+    --surface: #1e2d3d;
+    --border: rgba(255,70,85,0.25);
+    --text: #ece8e1;
+    --muted: #7b8fa6;
+    --green: #3cbf6e;
+    --green-glow: rgba(60,191,110,0.3);
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .scanlines {
+    position: fixed; inset: 0; pointer-events: none; z-index: 1000;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+  }
+
+  #app {
+    width: 100%; max-width: 700px; padding: 1.5rem;
+    position: relative; z-index: 1;
+  }
+
+  /* ---- HEADER ---- */
+  .header {
+    text-align: center; margin-bottom: 2rem;
+  }
+  .logo {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 2.8rem; font-weight: 700; letter-spacing: 4px;
+    color: var(--red); text-transform: uppercase;
+    text-shadow: 0 0 20px var(--red-glow);
+  }
+  .logo span { color: var(--text); }
+  .subtitle {
+    font-size: 0.85rem; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-top: 4px;
+  }
+
+  /* ---- SPIKE BAR ---- */
+  .spike-bar {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    display: flex; align-items: center; gap: 1rem;
+  }
+  .spike-icon {
+    font-size: 1.6rem; flex-shrink: 0;
+    animation: spike-pulse 2s ease-in-out infinite;
+  }
+  @keyframes spike-pulse {
+    0%, 100% { filter: drop-shadow(0 0 4px var(--red-glow)); }
+    50% { filter: drop-shadow(0 0 12px var(--red-glow)); }
+  }
+  .spike-meta { flex: 1; }
+  .spike-label {
+    font-family: 'Rajdhani', sans-serif; font-size: 0.75rem;
+    letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 4px;
+  }
+  .timer-track {
+    height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden; margin-top: 6px;
+  }
+  .timer-fill {
+    height: 100%; border-radius: 3px; transition: width 1s linear, background 0.5s;
+    background: var(--red);
+  }
+  .timer-display {
+    font-family: 'Rajdhani', sans-serif; font-size: 2rem; font-weight: 700;
+    color: var(--red); text-shadow: 0 0 10px var(--red-glow); min-width: 60px; text-align: right;
+  }
+
+  /* ---- PROGRESS ---- */
+  .progress-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+  .progress-label {
+    font-size: 0.8rem; color: var(--muted); letter-spacing: 1px; text-transform: uppercase;
+  }
+  .progress-dots {
+    display: flex; gap: 6px;
+  }
+  .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    border: 1.5px solid var(--muted); transition: all 0.3s;
+  }
+  .dot.correct { background: var(--green); border-color: var(--green); box-shadow: 0 0 6px var(--green-glow); }
+  .dot.wrong { background: var(--red); border-color: var(--red); }
+  .dot.current { border-color: var(--red); animation: dot-blink 1s ease-in-out infinite; }
+  @keyframes dot-blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* ---- QUESTION CARD ---- */
+  .question-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    position: relative; overflow: hidden;
+  }
+  .question-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--red), var(--red-dark));
+  }
+  .question-category {
+    font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--red); margin-bottom: 0.75rem; font-weight: 600;
+  }
+  .question-text {
+    font-size: 1.15rem; line-height: 1.5; color: var(--text); font-weight: 500;
+  }
+
+  /* ---- OPTIONS ---- */
+  .options {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 1rem;
+  }
+  .option-btn {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.75rem 1rem;
+    color: var(--text); cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-size: 0.95rem;
+    text-align: left; transition: all 0.15s;
+    display: flex; align-items: center; gap: 0.6rem;
+  }
+  .option-key {
+    font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 0.8rem;
+    color: var(--red); min-width: 18px;
+  }
+  .option-btn:hover:not(:disabled) {
+    border-color: var(--red); background: rgba(255,70,85,0.08);
+  }
+  .option-btn.correct {
+    border-color: var(--green); background: rgba(60,191,110,0.12);
+    color: var(--green);
+  }
+  .option-btn.wrong {
+    border-color: var(--red); background: rgba(255,70,85,0.12);
+    color: var(--red);
+  }
+  .option-btn:disabled { cursor: default; }
+
+  /* ---- FEEDBACK ---- */
+  .feedback {
+    text-align: center; font-size: 0.9rem; min-height: 1.5rem;
+    color: var(--muted); padding: 0.5rem 0;
+    transition: all 0.2s;
+  }
+  .feedback.correct { color: var(--green); }
+  .feedback.wrong { color: var(--red); }
+
+  /* ---- SCREENS ---- */
+  .screen {
+    display: none; flex-direction: column; align-items: center;
+    text-align: center; padding: 2rem 1rem;
+  }
+  .screen.active { display: flex; }
+
+  .screen-title {
+    font-family: 'Rajdhani', sans-serif; font-size: 2.5rem; font-weight: 700;
+    letter-spacing: 3px; text-transform: uppercase; margin-bottom: 0.5rem;
+  }
+  .screen-sub {
+    color: var(--muted); font-size: 0.9rem; margin-bottom: 1.5rem; line-height: 1.6;
+  }
+  .screen-icon { font-size: 5rem; margin-bottom: 1rem; }
+
+  .btn-primary {
+    background: var(--red); border: none; border-radius: 4px;
+    color: #fff; font-family: 'Rajdhani', sans-serif; font-size: 1.1rem;
+    font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+    padding: 0.75rem 2.5rem; cursor: pointer; transition: all 0.15s;
+    box-shadow: 0 0 20px var(--red-glow);
+  }
+  .btn-primary:hover { background: #ff2035; box-shadow: 0 0 30px var(--red-glow); }
+
+  .btn-outline {
+    background: transparent; border: 1px solid var(--border);
+    border-radius: 4px; color: var(--muted); font-family: 'Rajdhani', sans-serif;
+    font-size: 1rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+    padding: 0.6rem 2rem; cursor: pointer; transition: all 0.15s; margin-top: 0.75rem;
+  }
+  .btn-outline:hover { border-color: var(--muted); color: var(--text); }
+
+  .stat-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;
+    width: 100%; margin-bottom: 1.5rem;
+  }
+  .stat-card {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 4px;
+    padding: 0.75rem; text-align: center;
+  }
+  .stat-val {
+    font-family: 'Rajdhani', sans-serif; font-size: 1.8rem; font-weight: 700;
+    color: var(--red);
+  }
+  .stat-lbl { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+  /* ---- EXPLOSION ---- */
+  .explosion-overlay {
+    display: none; position: fixed; inset: 0; z-index: 500;
+    background: rgba(0,0,0,0);
+    pointer-events: none;
+  }
+  .explosion-overlay.active { display: block; }
+
+  @keyframes explode {
+    0%   { background: rgba(0,0,0,0); }
+    10%  { background: rgba(255,70,85,0.9); }
+    30%  { background: rgba(255,150,0,0.7); }
+    60%  { background: rgba(255,70,85,0.3); }
+    100% { background: rgba(0,0,0,0); }
+  }
+
+  /* ---- DEFUSE ANIMATION ---- */
+  .defuse-overlay {
+    display: none; position: fixed; inset: 0; z-index: 500;
+    background: rgba(0,0,0,0); pointer-events: none;
+  }
+  .defuse-overlay.active { display: block; }
+  @keyframes defuse-flash {
+    0%   { background: rgba(0,0,0,0); }
+    15%  { background: rgba(60,191,110,0.5); }
+    100% { background: rgba(0,0,0,0); }
+  }
+
+  /* ---- DIFFICULTY SELECTOR ---- */
+  .diff-grid { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; }
+  .diff-btn {
+    flex: 1; padding: 0.75rem; border-radius: 4px; cursor: pointer;
+    border: 1px solid var(--border); background: var(--bg2);
+    color: var(--muted); font-family: 'Rajdhani', sans-serif;
+    font-size: 0.95rem; font-weight: 600; letter-spacing: 1px; transition: all 0.15s;
+  }
+  .diff-btn:hover, .diff-btn.active { border-color: var(--red); color: var(--text); }
+  .diff-btn .diff-icon { font-size: 1.4rem; display: block; margin-bottom: 4px; }
+  .diff-btn .diff-name { text-transform: uppercase; }
+  .diff-btn .diff-desc { font-size: 0.65rem; color: var(--muted); font-family: 'DM Sans', sans-serif; margin-top: 2px; }
+
+  #game-area { display: none; }
+  #game-area.active { display: block; }
+
+  .round-badge {
+    font-family: 'Rajdhani', sans-serif; font-size: 0.75rem; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--muted); text-align: right;
+    margin-bottom: 0.5rem;
+  }
+</style>
+</head>
+<body>
+<div class="scanlines"></div>
+<div class="explosion-overlay" id="explosion"></div>
+<div class="defuse-overlay" id="defuse"></div>
+
+<div id="app">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">Valo<span>Quiz</span></div>
+    <div class="subtitle">Defuse the Spike</div>
+  </div>
+
+  <!-- START SCREEN -->
+  <div class="screen active" id="screen-start">
+    <div class="screen-icon">💣</div>
+    <div class="screen-title" style="color: var(--red);">Spike plantada</div>
+    <div class="screen-sub">
+      Responde las preguntas antes de que el tiempo se acabe.<br>
+      Si no llegas a tiempo… <strong style="color:var(--red)">BOOM.</strong>
+    </div>
+    <div style="width:100%; margin-bottom: 1rem;">
+      <div class="spike-label" style="text-align:left; margin-bottom:0.5rem;">Dificultad</div>
+      <div class="diff-grid">
+        <button class="diff-btn" data-diff="easy">
+          <span class="diff-icon">🟢</span>
+          <span class="diff-name">Fácil</span>
+          <span class="diff-desc">90 seg · 5 preguntas</span>
+        </button>
+        <button class="diff-btn active" data-diff="medium">
+          <span class="diff-icon">🔴</span>
+          <span class="diff-name">Normal</span>
+          <span class="diff-desc">60 seg · 8 preguntas</span>
+        </button>
+        <button class="diff-btn" data-diff="hard">
+          <span class="diff-icon">💀</span>
+          <span class="diff-name">Ace</span>
+          <span class="diff-desc">45 seg · 10 preguntas</span>
+        </button>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="startGame()">Plantar Spike</button>
+  </div>
+
+  <!-- GAME AREA -->
+  <div id="game-area">
+    <div class="spike-bar">
+      <div class="spike-icon">💣</div>
+      <div class="spike-meta">
+        <div class="spike-label">Tiempo restante</div>
+        <div class="timer-track">
+          <div class="timer-fill" id="timer-fill" style="width:100%"></div>
+        </div>
+      </div>
+      <div class="timer-display" id="timer-display">60</div>
+    </div>
+
+    <div class="progress-row">
+      <div class="progress-label">Progreso</div>
+      <div class="progress-dots" id="dots"></div>
+    </div>
+    <div class="round-badge" id="round-badge">Pregunta 1 / 8</div>
+
+    <div class="question-card">
+      <div class="question-category" id="q-category">Agentes</div>
+      <div class="question-text" id="q-text">Cargando...</div>
+    </div>
+
+    <div class="options" id="options"></div>
+    <div class="feedback" id="feedback"></div>
+  </div>
+
+  <!-- WIN SCREEN -->
+  <div class="screen" id="screen-win">
+    <div class="screen-icon">✅</div>
+    <div class="screen-title" style="color: var(--green);">Spike desactivada</div>
+    <div class="screen-sub" id="win-sub">Completaste el round. El equipo está a salvo.</div>
+    <div class="stat-grid" id="win-stats"></div>
+    <button class="btn-primary" style="background:var(--green); box-shadow: 0 0 20px var(--green-glow);" onclick="goHome()">Nueva ronda</button>
+  </div>
+
+  <!-- LOSE SCREEN -->
+  <div class="screen" id="screen-lose">
+    <div class="screen-icon">💥</div>
+    <div class="screen-title" style="color: var(--red);">Spike detonada</div>
+    <div class="screen-sub" id="lose-sub">El tiempo se acabó. Ronda perdida.</div>
+    <div class="stat-grid" id="lose-stats"></div>
+    <button class="btn-primary" onclick="goHome()">Reintentar</button>
+  </div>
+</div>
+
+<script>
+const DIFFICULTIES = {
+  easy:   { time: 90, needed: 5,  label: '90s · 5 preguntas' },
+  medium: { time: 60, needed: 8,  label: '60s · 8 preguntas' },
+  hard:   { time: 45, needed: 10, label: '45s · 10 preguntas' },
+};
+
+const ALL_QUESTIONS = [
+  { cat: 'Agentes',   q: '¿Qué agente usa la habilidad "Paranoia" para cegar a sus enemigos?', opts: ['Omen','Phoenix','Reyna','Neon'], ans: 0 },
+  { cat: 'Agentes',   q: '¿Cuál es la ultimate de Jett?', opts: ['Tailwind','Blade Storm','Updraft','Cloudburst'], ans: 1 },
+  { cat: 'Agentes',   q: '¿A qué clase pertenece Sage?', opts: ['Duelista','Iniciador','Centinela','Controlador'], ans: 2 },
+  { cat: 'Agentes',   q: '¿Qué agente puede revivir a compañeros de equipo con su ultimate?', opts: ['Sage','Phoenix','Skye','Chamber'], ans: 0 },
+  { cat: 'Agentes',   q: '¿Cuál es el rol de Killjoy?', opts: ['Duelista','Controlador','Centinela','Iniciador'], ans: 2 },
+  { cat: 'Agentes',   q: '¿Qué agente lanza un hacha que rebota por paredes?', opts: ['Raze','Neon','Iso','Vyse'], ans: 0 },
+  { cat: 'Agentes',   q: '¿De qué país es el agente Gekko?', opts: ['México','Brasil','EE.UU.','España'], ans: 2 },
+  { cat: 'Agentes',   q: '¿Cuál es el nombre real de "Omen"?', opts: ['Desconocido','Viktor','Ezra','Marcus'], ans: 0 },
+  { cat: 'Agentes',   q: '¿Qué agente puede teletransportarse usando puertas dimensionales?', opts: ['Yoru','Omen','Chamber','Neon'], ans: 0 },
+  { cat: 'Agentes',   q: '¿Qué ultimate coloca una cámara de torreta de alta tecnología?', opts: ['Cypher','Killjoy','Chamber','Sova'], ans: 1 },
+  { cat: 'Mapas',     q: '¿Cuántos sitios tiene el mapa "Bind"?', opts: ['1','2','3','4'], ans: 1 },
+  { cat: 'Mapas',     q: '¿En qué mapa hay teleportadores?', opts: ['Split','Haven','Bind','Fracture'], ans: 2 },
+  { cat: 'Mapas',     q: '¿Cuántos sitios tiene el mapa "Haven"?', opts: ['1','2','3','4'], ans: 2 },
+  { cat: 'Mapas',     q: '¿En qué ciudad está ambientado el mapa "Icebox"?', opts: ['Ártico ruso','Alaska','Islandia','Siberia'], ans: 0 },
+  { cat: 'Mapas',     q: '¿Qué mapa fue el primero en lanzarse con el juego?', opts: ['Bind','Split','Haven','Ascent'], ans: 0 },
+  { cat: 'Armas',     q: '¿Cuántos créditos cuesta el Vandal?', opts: ['2700','2900','3150','3000'], ans: 2 },
+  { cat: 'Armas',     q: '¿Qué arma es la más cara del juego (excluyendo habilidades)?', opts: ['Odin','Operator','Vandal','Phantom'], ans: 1 },
+  { cat: 'Armas',     q: '¿El Phantom o el Vandal tienen mayor cadencia de fuego?', opts: ['Phantom','Vandal','Igual','Depende del skin'], ans: 0 },
+  { cat: 'Armas',     q: '¿Qué pistola hace daño de fuego al explotar?', opts: ['Frenzy','Shorty','Bucky','Ghost'], ans: 3 },
+  { cat: 'Armas',     q: '¿Cuánto cuesta la escopeta "Bucky"?', opts: ['750','900','1050','1200'], ans: 2 },
+  { cat: 'Armas',     q: '¿Qué SMG tiene munición de 55 balas en un cargador?', opts: ['Stinger','Spectre','Ares','Bulldog'], ans: 1 },
+  { cat: 'Mecánicas', q: '¿Cuántos segundos dura la fase de compra al inicio de cada ronda?', opts: ['20','30','45','60'], ans: 1 },
+  { cat: 'Mecánicas', q: '¿Cuántos HP tiene un jugador al inicio de la ronda?', opts: ['100','125','150','75'], ans: 0 },
+  { cat: 'Mecánicas', q: '¿Cuántos puntos de escudo otorga el escudo ligero?', opts: ['25','50','75','100'], ans: 1 },
+  { cat: 'Mecánicas', q: '¿Cuántas rondas necesita ganar un equipo para llevarse el partido (ignora overtime)?', opts: ['10','12','13','15'], ans: 2 },
+  { cat: 'Mecánicas', q: '¿Cuántos segundos tiene la spike para detonar después de ser plantada?', opts: ['35','40','45','50'], ans: 2 },
+  { cat: 'Esports',   q: '¿Qué equipo ganó el primer VCT Champions (2021)?', opts: ['Sentinels','Acend','Fnatic','100 Thieves'], ans: 1 },
+  { cat: 'Esports',   q: '¿En qué ciudad se celebró el VCT Champions 2023?', opts: ['Tokio','Los Angeles','Berlín','São Paulo'], ans: 0 },
+  { cat: 'Esports',   q: '¿Qué jugador es conocido como el "mejor Jett del mundo" en sus primeros años?', opts: ['TenZ','ShahZaM','cNed','Yay'], ans: 2 },
+  { cat: 'Esports',   q: '¿Qué organización es LOUD?', opts: ['Brasileña','Argentina','Colombiana','Mexicana'], ans: 0 },
+  { cat: 'Lore',      q: '¿Qué organización es la principal antagonista en el lore de Valorant?', opts: ['VALORANT Protocol','Kingdom Corporation','Mirror Earth','The Array'], ans: 1 },
+  { cat: 'Lore',      q: '¿Cómo se llama el evento misterioso que inicia el lore del juego?', opts: ['First Light','The Incident','Radiante Event','Kingdom Day'], ans: 0 },
+];
+
+let state = {
+  diff: 'medium',
+  questions: [],
+  current: 0,
+  correct: 0,
+  wrong: 0,
+  timeLeft: 60,
+  totalTime: 60,
+  needed: 8,
+  timer: null,
+  answered: false,
+  startTime: 0,
+};
+
+// ---- DIFF SELECTOR ----
+document.querySelectorAll('.diff-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.diff = btn.dataset.diff;
+  });
+});
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startGame() {
+  const cfg = DIFFICULTIES[state.diff];
+  state.timeLeft = cfg.time;
+  state.totalTime = cfg.time;
+  state.needed = cfg.needed;
+  state.correct = 0;
+  state.wrong = 0;
+  state.current = 0;
+  state.questions = shuffle(ALL_QUESTIONS).slice(0, Math.min(cfg.needed + 5, ALL_QUESTIONS.length));
+  state.startTime = Date.now();
+
+  document.getElementById('screen-start').classList.remove('active');
+  document.getElementById('game-area').classList.add('active');
+
+  buildDots();
+  renderQuestion();
+  startTimer();
+}
+
+function buildDots() {
+  const container = document.getElementById('dots');
+  container.innerHTML = '';
+  for (let i = 0; i < state.needed; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' current' : '');
+    d.id = 'dot-' + i;
+    container.appendChild(d);
+  }
+}
+
+function renderQuestion() {
+  const q = state.questions[state.current];
+  state.answered = false;
+
+  document.getElementById('q-category').textContent = q.cat;
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('round-badge').textContent = `Pregunta ${state.correct + 1} / ${state.needed}`;
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback';
+
+  const keys = ['A','B','C','D'];
+  const optBox = document.getElementById('options');
+  optBox.innerHTML = '';
+
+  const shuffledOpts = shuffle(q.opts.map((text, i) => ({ text, correct: i === q.ans })));
+  shuffledOpts.forEach((opt, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.dataset.correct = opt.correct;
+    btn.innerHTML = `<span class="option-key">${keys[idx]}</span>${opt.text}`;
+    btn.addEventListener('click', () => handleAnswer(btn));
+    optBox.appendChild(btn);
+  });
+}
+
+function handleAnswer(btn) {
+  if (state.answered) return;
+  state.answered = true;
+
+  const correct = btn.dataset.correct === 'true';
+  const allBtns = document.querySelectorAll('.option-btn');
+
+  allBtns.forEach(b => {
+    b.disabled = true;
+    if (b.dataset.correct === 'true') b.classList.add('correct');
+  });
+
+  const fb = document.getElementById('feedback');
+
+  if (correct) {
+    btn.classList.add('correct');
+    state.correct++;
+    fb.textContent = '¡Correcto! +1 defuse';
+    fb.className = 'feedback correct';
+    const dot = document.getElementById('dot-' + (state.correct - 1));
+    if (dot) { dot.classList.remove('current'); dot.classList.add('correct'); }
+    if (state.correct >= state.needed) {
+      setTimeout(winGame, 600);
+      return;
+    }
+  } else {
+    btn.classList.add('wrong');
+    state.wrong++;
+    fb.textContent = 'Incorrecto. Sigue intentando.';
+    fb.className = 'feedback wrong';
+  }
+
+  const nextDot = document.getElementById('dot-' + state.correct);
+  if (nextDot) nextDot.classList.add('current');
+
+  state.current++;
+  if (state.current >= state.questions.length) {
+    state.questions = [...state.questions, ...shuffle(ALL_QUESTIONS).slice(0, 5)];
+  }
+
+  setTimeout(renderQuestion, 1100);
+}
+
+function startTimer() {
+  clearInterval(state.timer);
+  updateTimerUI();
+  state.timer = setInterval(() => {
+    state.timeLeft--;
+    updateTimerUI();
+    if (state.timeLeft <= 0) {
+      clearInterval(state.timer);
+      loseGame();
+    }
+  }, 1000);
+}
+
+function updateTimerUI() {
+  const pct = (state.timeLeft / state.totalTime) * 100;
+  const fill = document.getElementById('timer-fill');
+  const display = document.getElementById('timer-display');
+  display.textContent = state.timeLeft;
+  fill.style.width = pct + '%';
+
+  if (pct > 50) {
+    fill.style.background = 'var(--red)';
+    display.style.color = 'var(--red)';
+  } else if (pct > 25) {
+    fill.style.background = '#ff8c00';
+    display.style.color = '#ff8c00';
+  } else {
+    fill.style.background = '#ff2200';
+    display.style.color = '#ff2200';
+    display.style.textShadow = '0 0 20px rgba(255,34,0,0.8)';
+  }
+}
+
+function winGame() {
+  clearInterval(state.timer);
+  const elapsed = Math.round((Date.now() - state.startTime) / 1000);
+  const timeUsed = state.totalTime - state.timeLeft;
+
+  // Defuse flash
+  const overlay = document.getElementById('defuse');
+  overlay.style.animation = 'defuse-flash 0.8s ease-out forwards';
+  overlay.classList.add('active');
+  setTimeout(() => { overlay.classList.remove('active'); overlay.style.animation = ''; }, 800);
+
+  document.getElementById('game-area').classList.remove('active');
+
+  document.getElementById('win-sub').textContent =
+    `Desactivaste la spike con ${state.timeLeft}s restantes. El equipo está vivo.`;
+
+  document.getElementById('win-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-val" style="color:var(--green)">${state.correct}</div><div class="stat-lbl">Correctas</div></div>
+    <div class="stat-card"><div class="stat-val">${state.wrong}</div><div class="stat-lbl">Falladas</div></div>
+    <div class="stat-card"><div class="stat-val">${state.timeLeft}s</div><div class="stat-lbl">Tiempo extra</div></div>
+  `;
+  document.getElementById('screen-win').classList.add('active');
+}
+
+function loseGame() {
+  // Explosion
+  const overlay = document.getElementById('explosion');
+  overlay.style.animation = 'explode 0.9s ease-out forwards';
+  overlay.classList.add('active');
+  setTimeout(() => { overlay.classList.remove('active'); overlay.style.animation = ''; }, 900);
+
+  document.getElementById('game-area').classList.remove('active');
+
+  const acc = state.correct + state.wrong > 0
+    ? Math.round((state.correct / (state.correct + state.wrong)) * 100)
+    : 0;
+
+  document.getElementById('lose-sub').textContent =
+    `Tiempo agotado. Solo respondiste ${state.correct} de ${state.needed} preguntas necesarias.`;
+
+  document.getElementById('lose-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-val" style="color:var(--green)">${state.correct}</div><div class="stat-lbl">Correctas</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--red)">${state.needed - state.correct}</div><div class="stat-lbl">Faltaron</div></div>
+    <div class="stat-card"><div class="stat-val">${acc}%</div><div class="stat-lbl">Precisión</div></div>
+  `;
+  document.getElementById('screen-lose').classList.add('active');
+}
+
+function goHome() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('game-area').classList.remove('active');
+  document.getElementById('screen-start').classList.add('active');
+  clearInterval(state.timer);
+}
+</script>
+</body>
+</html>
