@@ -199,6 +199,7 @@
   .questions-count { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; }
   .btn-link { background: transparent; border: none; color: var(--muted); font-size: 0.85rem; cursor: pointer; text-decoration: underline; margin-top: 0.75rem; -webkit-tap-highlight-color: transparent; }
 </style>
+
 </head>
 <body>
 <div class="scanlines"></div>
@@ -331,6 +332,27 @@
 </div>
 
 <script>
+ import { createClient } from 'https://jsdelivr.net'
+ 
+const supabaseUrl = 'https://smnjhriwbrfpvdfiiapo.supabase.co'
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtbmpocml3YnJmcHZkZmlpYXBvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MjIzNjAsImV4cCI6MjA5ODA5ODM2MH0.K4bBhJhRjeqCDl2i5XT2oMBpcJjZfVvZnl5eaWQqqhQ'
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+async function obtenerDatos() {
+            const { data, error } = await supabase
+                .from('jugador')
+                .select('*')
+
+            if (error) {
+                console.error('Error:', error)
+            } else {
+                console.log('Datos de Supabase:', data)
+            }
+        }
+        obtenerDatos()
+
+
 // ---- CONFIG ----
 const DIFF = {
   easy:   { time: 90, needed: 5,  mult: 1.0  },
