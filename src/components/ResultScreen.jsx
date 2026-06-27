@@ -10,7 +10,7 @@ export default function ResultScreen({
   wrongCount,
   needed,
   basePoints,
-  timeBonus,
+  difficultyMultiplier = 1.0,
   totalGained,
   newTotal,
   rankIcons,
@@ -45,10 +45,16 @@ export default function ResultScreen({
       {/* Points Banner */}
       <div className="points-banner">
         {totalGained > 0 ? (
-          <div>
-            <div className="points-big">+{totalGained.toLocaleString()}</div>
-            <div className="points-label">puntos ganados</div>
-          </div>
+          <>
+            <div>
+              <div className="points-big">+{totalGained.toLocaleString()}</div>
+              <div className="points-label">puntos ganados</div>
+            </div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--muted)', textAlign: 'right' }}>
+              <div>{basePoints.toLocaleString()} base</div>
+              <div>x{difficultyMultiplier} multiplicador</div>
+            </div>
+          </>
         ) : (
           <div style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>
             Sin puntos — responde al menos una correcta

@@ -17,7 +17,7 @@ import { fetchValorantQuizData, shuffle } from './services/valorantApi';
 const DIFF = {
   easy: { time: 90, needed: 5, mult: 1.0 },
   medium: { time: 60, needed: 8, mult: 1.5 },
-  hard: { time: 45, needed: 10, mult: 2.5 },
+  hard: { time: 30, needed: 10, mult: 2.5 },
 };
 
 const PTS_PER_CORRECT = 100;
@@ -61,7 +61,7 @@ export default function App() {
   // Game End metrics
   const [gameResults, setGameResults] = useState({
     basePoints: 0,
-    timeBonus: 0,
+    difficultyMultiplier: 1.0,
     totalGained: 0,
     newTotal: 0,
   });
@@ -73,7 +73,7 @@ export default function App() {
       setLeaderboard(lb);
     }
     loadInitialLB();
-    
+
     async function loadData() {
       const data = await fetchValorantQuizData();
       setQuestionPool(data.questionPool);
@@ -169,8 +169,7 @@ export default function App() {
     const nextDotStates = [...dotStates];
 
     if (isCorrect) {
-      const ptsGained = Math.round(PTS_PER_CORRECT * cfg.mult);
-      newScore = score + ptsGained;
+      newScore = score + PTS_PER_CORRECT;
       setScore(newScore);
 
       newCorrect = correctCount + 1;
@@ -178,6 +177,7 @@ export default function App() {
 
       nextDotStates[currentQuestionIndex] = 'correct';
 
+      const ptsGained = Math.round(PTS_PER_CORRECT * cfg.mult);
       setFeedback({
         text: `¡Correcto! +${ptsGained} pts`,
         type: 'correct',
@@ -238,7 +238,9 @@ export default function App() {
   };
 
   const handleLoseGame = async () => {
-    const totalGainedVal = score; // 100% score for endless/time-attack mode
+    const cfg = DIFF[difficulty];
+    const basePointsVal = score;
+    const totalGainedVal = Math.round(basePointsVal * cfg.mult);
     const prevPts = await getPlayerPts(playerTag);
 
     let updatedLB = leaderboard;
@@ -249,8 +251,8 @@ export default function App() {
     const newTotalVal = prevPts + totalGainedVal;
 
     setGameResults({
-      basePoints: score,
-      timeBonus: 0,
+      basePoints: basePointsVal,
+      difficultyMultiplier: cfg.mult,
       totalGained: totalGainedVal,
       newTotal: newTotalVal,
     });
@@ -346,7 +348,7 @@ export default function App() {
             needed={cfg.needed}
             correctCount={correctCount}
             wrongCount={wrongCount}
-            score={score}
+            score={Math.round(score * cfg.mult)}
             currentQuestion={currentQuestion}
             onAnswer={handleAnswer}
             answered={answered}
@@ -369,7 +371,7 @@ export default function App() {
             needed={cfg.needed}
             difficulty={difficulty}
             basePoints={gameResults.basePoints}
-            timeBonus={gameResults.timeBonus}
+            difficultyMultiplier={gameResults.difficultyMultiplier}
             totalGained={gameResults.totalGained}
             newTotal={gameResults.newTotal}
             rankIcons={rankIcons}

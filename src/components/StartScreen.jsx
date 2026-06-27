@@ -46,7 +46,7 @@ export default function StartScreen({
           >
             <span className="diff-icon">🟢</span>
             <span className="diff-name">Fácil</span>
-            <span className="diff-desc">90s · 5 preguntas · x1</span>
+            <span className="diff-desc">90s · x1</span>
           </button>
           <button
             className={`diff-btn ${difficulty === 'medium' ? 'active' : ''}`}
@@ -54,7 +54,7 @@ export default function StartScreen({
           >
             <span className="diff-icon">🔴</span>
             <span className="diff-name">Normal</span>
-            <span className="diff-desc">60s · 8 preguntas · x1.5</span>
+            <span className="diff-desc">60s · x1.5</span>
           </button>
           <button
             className={`diff-btn ${difficulty === 'hard' ? 'active' : ''}`}
@@ -62,7 +62,7 @@ export default function StartScreen({
           >
             <span className="diff-icon">💀</span>
             <span className="diff-name">Ace</span>
-            <span className="diff-desc">45s · 10 preguntas · x2.5</span>
+            <span className="diff-desc">30s · x2.5</span>
           </button>
         </div>
       </div>
