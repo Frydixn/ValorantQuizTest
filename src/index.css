@@ -1,0 +1,59 @@
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap');
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --red: #ff4655;
+  --red-dark: #c1121f;
+  --red-glow: rgba(255, 70, 85, 0.35);
+  --gold: #e8c84a;
+  --bg: #0f1923;
+  --bg2: #1a2332;
+  --bg3: #243040;
+  --surface: #1e2d3d;
+  --border: rgba(255, 70, 85, 0.25);
+  --text: #ece8e1;
+  --muted: #7b8fa6;
+  --green: #3cbf6e;
+  --green-glow: rgba(60, 191, 110, 0.3);
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+@media (min-width: 480px) {
+  body {
+    align-items: center;
+  }
+}
+
+.scanlines {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1000;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.03) 2px, rgba(0, 0, 0, 0.03) 4px);
+}
+
+#app {
+  width: 100%;
+  max-width: 700px;
+  padding: 1.25rem;
+  position: relative;
+  z-index: 1;
+}
